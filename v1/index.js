@@ -21,5 +21,6 @@ app.use((req, res, next)=> {
 app.use('/characters', require('./routes/characters'));
 app.use('/chatlogs', require('./routes/chatlogs'));
 app.use('/github', require('./routes/github'));
+app.use('/vcsfeed', require('./routes/vcsfeed'));
 
 module.exports = app;
