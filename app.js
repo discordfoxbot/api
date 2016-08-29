@@ -3,12 +3,15 @@ process.env.NODE_ENV = 'development';
 var express = require('express'),
     storyboard = require('storyboard'),
     xmlparser = require('js2xmlparser'),
-    morgan = require('morgan');
+    morgan = require('morgan'),
+    Promise = require('bluebird');
 
 var story = storyboard.mainStory,
     app = express();
 
 storyboard.addListener(require('storyboard/lib/listeners/console').default);
+
+Promise.config({warnings: false});
 
 if (process.env.NODE_ENV === 'development') {
     app.set('json spaces', 4);
@@ -19,7 +22,7 @@ app.set('trust proxy', 'loopback');
 app.use(morgan('short', {
     stream: {
         write: (toLog)=> {
-            story.info('http', toLog)
+            story.info('http', toLog.replace('\n', ''));
         }
     }
 }));
