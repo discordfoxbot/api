@@ -65,6 +65,19 @@ var exprt = {
                 }
         }
         res.status(err.code).json({data: payload, context: 'Error<ApiError>', time: new Date()});
+    },
+    apijson: (req, res, next)=> {
+        res.apijson = (data, meta = {})=> {
+            res.json({
+                data,
+                context: meta.context,
+                count: (Array.isArray(data) ? data.length : undefined),
+                total: meta.total || undefined,
+                next: meta.next || undefined,
+                time: new Date()
+            })
+        };
+        next();
     }
 };
 
