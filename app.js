@@ -43,22 +43,6 @@ app.use((req, res, next)=> {
     }
 });
 
-app.use((req, res, next)=> {
-    res._json = res.json;
-    res.json = (obj)=> {
-        if (req.query.format !== undefined) {
-            if (req.query.format.toLowerCase() === 'xml') {
-                res.type('xml');
-                if (Array.isArray(obj.data)) {
-                    res.send(xmlparser('data', obj.data, {arrayMap: {data: 'object'}}));
-                } else res.send(xmlparser('data', obj.data));
-            } else if (req.query.format.toLowerCase() === 'json')res._json(obj);
-            else res._json(obj);
-        } else res._json(obj);
-    };
-    next();
-});
-
 app.use('/api/v1', require('./v1/index'));
 
 app.use((req, res)=> {

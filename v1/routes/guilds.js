@@ -17,7 +17,7 @@ app.get('/', middleware.auth, (req, res, next)=> {
                         channels: channels[guilds.indexOf(guild)].map(channel=>channel.cid),
                         shard: guild.shard_id
                     }
-                }))
+                }), {context: 'Array<Guild>'})
             }
         );
     }).catch(err=> {
@@ -37,7 +37,7 @@ app.get('/:id', middleware.auth, (req, res, next)=> {
                     prefixes: prefixes.map(prefix=>prefix.prefix),
                     channels: channels.map(channel=>channel.cid),
                     shard: guild.shard_id
-                });
+                }, {context: 'Object<Guild>'});
             });
         } else next({code: 403});
     }).catch(err=> {

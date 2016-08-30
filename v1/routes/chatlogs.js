@@ -27,7 +27,7 @@ app.get('/:id', (req, res)=> {
                             };
                         }),
 
-                    });
+                    }, {context: 'Object<Chatlog>'});
                 });
             });
         } else next(404);

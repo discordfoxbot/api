@@ -25,6 +25,9 @@ var exprt = {
             })
         } else next({code: 401});
     },
+    catcher: (req, res, next)=> {
+        next({code: 4404})
+    },
     error: (err, req, res, next)=> {
         var payload;
         switch (err.code) {
@@ -38,6 +41,13 @@ var exprt = {
                 payload = {
                     message: 'Insufficient Permission. The Token you supplied does not have the permission to access this ressource.',
                     error: 'insufficient_permission'
+                };
+                break;
+            case 4404:
+                err.code = 404;
+                payload = {
+                    message: 'The requested endpoint does not exist or is not reachable with this method',
+                    error: 'invalid_endpoint'
                 };
                 break;
             case 3000:
@@ -54,7 +64,7 @@ var exprt = {
                     error: 'unknown'
                 }
         }
-        res.status(err.code).json(payload);
+        res.status(err.code).json({data: payload, context: 'Error<ApiError>', time: new Date()});
     }
 };
 

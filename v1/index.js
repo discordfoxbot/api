@@ -9,6 +9,7 @@ app.use((req, res, next)=> {
     res.apijson = (data, meta = {})=> {
         res.json({
             data,
+            context: meta.context,
             count: (Array.isArray(data) ? data.length : undefined),
             total: meta.total || undefined,
             next: meta.next || undefined,
@@ -23,6 +24,7 @@ app.use('/chatlogs', require('./routes/chatlogs'));
 app.use('/github', require('./routes/github'));
 app.use('/vcsfeed', require('./routes/vcsfeed'));
 app.use('/guilds', require('./routes/guilds'));
+app.use(middleware.catcher);
 
 app.use(middleware.error);
 

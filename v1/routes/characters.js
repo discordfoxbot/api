@@ -32,19 +32,17 @@ app.get('/', utils.middleware.query, (req, res)=> {
             }
             return character.getCharacterPictures({where: q});
         })).then((pictures)=> {
-            res.json({
-                data: result.rows.map((row)=> {
-                    return {
-                        id: row.id,
-                        name: row.name,
-                        source: row.source,
-                        type: row.type,
-                        pictures: pictures[result.rows.indexOf(row)].map((picture)=> {
-                            return picture.link
-                        })
-                    };
-                }),
-                count: result.rows.length,
+            res.apijson(result.rows.map((row)=> {
+                return {
+                    id: row.id,
+                    name: row.name,
+                    source: row.source,
+                    type: row.type,
+                    pictures: pictures[result.rows.indexOf(row)].map((picture)=> {
+                        return picture.link
+                    })
+                };
+            }), {
                 total: result.count,
                 offset: req.parsed_query.offset || 0,
                 next: (result.rows.length < req.parsed_query.limit ? null : {
@@ -57,7 +55,7 @@ app.get('/', utils.middleware.query, (req, res)=> {
                         return ret;
                     }()
                 }),
-                time: new Date()
+                context: 'Array<Character>'
             })
         });
     }).catch((err)=> {
@@ -77,8 +75,7 @@ app.get('/:id', (req, res)=> {
             }
         }
         return c.getCharacterPictures({where: q}).then((pics)=> {
-            res.json({
-                data: [{
+            res.apijson([{
                     id: c.id,
                     name: c.name,
                     source: c.source,
@@ -87,9 +84,7 @@ app.get('/:id', (req, res)=> {
                         return p.link
                     })
                 }],
-                count: 1, total: 1,
-                time: new Date()
-            });
+                {count: 1, total: 1, context: 'Object<Character>'});
         });
     }).catch((err)=> {
         res.status(500).json({error: 'Internal Server Error'});
