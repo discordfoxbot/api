@@ -31,6 +31,9 @@ app.get('/:id', (req, res)=> {
                 });
             });
         } else next(404);
+    }).catch((err)=>{
+        next({code: 5200});
+        story.warn('SQL-Error', '', {attach: err});
     });
 });
 

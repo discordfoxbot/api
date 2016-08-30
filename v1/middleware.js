@@ -50,7 +50,7 @@ var exprt = {
                     error: 'invalid_endpoint'
                 };
                 break;
-            case 3000:
+            case 5200:
                 err.code = 500;
                 payload = {
                     message: 'The server encountered an error querying the database. Please try again later!',

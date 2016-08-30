@@ -5,7 +5,7 @@ var Promise = require('bluebird');
 var db = require('../../db');
 var utils = require('../utils');
 
-app.get('/', utils.middleware.query, (req, res)=> {
+app.get('/', utils.middleware.query, (req, res, next)=> {
     var where;
     if (req.query.type !== undefined) {
         where = where || {};
@@ -59,12 +59,12 @@ app.get('/', utils.middleware.query, (req, res)=> {
             })
         });
     }).catch((err)=> {
-        res.status(500).json({error: 'Internal Server Error'});
+        next({code: 5200});
         story.warn('SQL-Error', '', {attach: err});
     });
 });
 
-app.get('/:id', (req, res)=> {
+app.get('/:id', (req, res, next)=> {
     db.models.Character.find({where: {id: req.params.id}}).then((c)=> {
         var q = {verified: true};
         if (req.query.pic_verified !== undefined) {
@@ -87,7 +87,7 @@ app.get('/:id', (req, res)=> {
                 {count: 1, total: 1, context: 'Object<Character>'});
         });
     }).catch((err)=> {
-        res.status(500).json({error: 'Internal Server Error'});
+        next({code: 5200});
         story.warn('SQL-Error', '', {attach: err});
     });
 });

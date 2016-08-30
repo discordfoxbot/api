@@ -21,7 +21,7 @@ app.get('/', middleware.auth, (req, res, next)=> {
             }
         );
     }).catch(err=> {
-        next({code: 3000});
+        next({code:5200});
         story.error('sql', 'auth', {attach: err});
     })
 });
@@ -41,7 +41,7 @@ app.get('/:id', middleware.auth, (req, res, next)=> {
             });
         } else next({code: 403});
     }).catch(err=> {
-        next({code: 3000});
+        next({code: 5200});
         story.error('sql', 'auth', {attach: err});
     })
 });
