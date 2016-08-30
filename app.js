@@ -46,7 +46,7 @@ app.use((req, res, next)=> {
 app.use('/api/v1', require('./v1/index'));
 
 app.use((req, res)=> {
-    res.status(404).json({error: 'invalid endpoint'});
+    res.status(404).end();
 });
 
 app.listen(4298);
