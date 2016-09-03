@@ -1,9 +1,10 @@
 var app = require('express').Router();
 var Promise = require('bluebird');
+var story = require('storyoard').mainStory;
 
 var db = require('../../db');
 
-app.get('/:id', (req, res)=> {
+app.get('/:id', (req, res, next)=> {
     db.models.ChatLog.find({where: {id: req.params.id}}).then(log=> {
         if (log !== null && log !== undefined) {
             log.getChatLogMessages({order: [['timestamp', 'ASC']]}).then(msgs=> {
@@ -31,7 +32,7 @@ app.get('/:id', (req, res)=> {
                 });
             });
         } else next(404);
-    }).catch((err)=>{
+    }).catch((err)=> {
         next({code: 5200});
         story.warn('SQL-Error', '', {attach: err});
     });
