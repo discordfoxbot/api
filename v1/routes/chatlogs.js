@@ -31,7 +31,7 @@ app.get('/:id', (req, res, next)=> {
                     }, {context: 'Object<Chatlog>'});
                 });
             });
-        } else next(404);
+        } else next({code: 404});
     }).catch((err)=> {
         next({code: 5200});
         story.warn('SQL-Error', '', {attach: err});
