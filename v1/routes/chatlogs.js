@@ -1,6 +1,6 @@
 var app = require('express').Router();
 var Promise = require('bluebird');
-var story = require('storyoard').mainStory;
+var story = require('storyboard').mainStory;
 
 var db = require('../../db');
 
