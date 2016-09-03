@@ -45,7 +45,7 @@ var exprt = {
                 break;
             case 404:
                 payload = {
-                    message: 'The requested could not be found.',
+                    message: 'The requested resource could not be found.',
                     error: 'not_found'
                 };
                 break;
