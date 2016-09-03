@@ -43,6 +43,12 @@ var exprt = {
                     error: 'insufficient_permission'
                 };
                 break;
+            case 404:
+                payload = {
+                    message: 'The requested could not be found.',
+                    error: 'not_found'
+                };
+                break;
             case 4404:
                 err.code = 404;
                 payload = {
