@@ -31,6 +31,19 @@ var exprt = {
     error: (err, req, res, next)=> {
         var payload;
         switch (err.code) {
+            case 301 || 302:
+                if (req.method === 'GET') {
+                    res.status(err.code).redirect(err.location);
+                } else {
+                    err.code = 400;
+                    payload = {
+                        message: 'The requested resource is ot available under this uri. Please use the uri specified in the location variable',
+                        error: 'location_invalid',
+                        location: err.location
+                    };
+                    err.err_context = 'Error<ApiLocationError>'
+                }
+                break;
             case 401:
                 payload = {
                     message: 'Token invalid. Please supply a valid token.',
@@ -39,7 +52,7 @@ var exprt = {
                 break;
             case 403:
                 payload = {
-                    message: 'Insufficient Permission. The Token you supplied does not have the permission to access this ressource.',
+                    message: 'Insufficient Permission. The Token you supplied does not have the permission to access this resource.',
                     error: 'insufficient_permission'
                 };
                 break;
@@ -70,7 +83,7 @@ var exprt = {
                     error: 'unknown'
                 }
         }
-        res.status(err.code).json({data: payload, context: 'Error<ApiError>', time: new Date()});
+        res.status(err.code).json({data: payload, context: err.err_context || 'Error<ApiError>', time: new Date()});
     },
     apijson: (req, res, next)=> {
         res.apijson = (data, meta = {})=> {
