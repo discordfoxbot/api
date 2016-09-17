@@ -1,6 +1,7 @@
 var story = require('storyboard').mainStory;
 
 var db = require('../db');
+var rolePerms = require('../rolePermissions');
 
 var exprt = {
     auth: (req, res, next)=> {
@@ -57,6 +58,13 @@ var exprt = {
                     error: 'database'
                 };
                 break;
+            case 5900:
+                err.code = 500;
+                payload = {
+                    message: 'There was an error in the application providing this api.',
+                    error: 'code_internal'
+                };
+                break;
             default:
                 err.code = 500;
                 payload = {
@@ -78,6 +86,61 @@ var exprt = {
             })
         };
         next();
+    },
+    query_limit: (req, res, next) => {
+        req.parsed_query = req.parsed_query || {};
+        req.parsed_query.limit = 25;
+        if (req.query.limit !== undefined) {
+            var l = parseInt(req.query.limit);
+            if (!isNaN(l)) {
+                if (l > 100) req.parsed_query.limit = 100;
+                else if (l < 1) req.parsed_query.limit = 1;
+                else req.parsed_query.limit = l;
+            }
+        }
+        next();
+    },
+    //middleware to parse ?offset to be passed to sequelize
+    query_offset: (req, res, next)=> {
+        req.parsed_query = req.parsed_query || {};
+        req.parsed_query.offset = 0;
+        if (req.query.offset !== undefined) {
+            var o = parseInt(req.query.offset);
+            if (!isNaN(o)) {
+                req.parsed_query.offset = o;
+            }
+        }
+        next();
+    },
+    //middleware that combines query_offset and query_limit
+    query: (req, res, next)=> {
+        exprt.middleware.query_limit(req, res, function () {
+            exprt.middleware.query_offset(req, res, next);
+        });
+    },
+    resolvePermissionGuild: (options = {perm: null, param: 'guild', required: null})=> {
+        return (req, res, next)=> {
+            if (options.perm === null)return next({code: 5900});
+            if (req.params[options.param] === undefined)return next({code: 5900});
+            exprt.auth(req, res, ()=> {
+                if (req.token.type === 'system')next();
+                else if (req.token.type === 'user')req.token.getUser().then(user=> {
+                    if (user.custom_role > 5) {
+                        next();
+                    } else return user.getGuildRoles({
+                        include: [{
+                            model: db.models.Guild,
+                            where: {gid: req.params[options.param]}
+                        }]
+                    })
+                }).spread(role=> {
+                    if (role !== undefined && role !== null) {
+                        if (rolePerms[role.level][options.perm])next();
+                        else next({code: 403});
+                    } else next({code: 403});
+                });
+            });
+        }
     }
 };
 

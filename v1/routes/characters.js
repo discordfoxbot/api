@@ -3,9 +3,9 @@ var story = require('storyboard').mainStory;
 var Promise = require('bluebird');
 
 var db = require('../../db');
-var utils = require('../utils');
+var middleware = require('../middleware');
 
-app.get('/', utils.middleware.query, (req, res, next)=> {
+app.get('/', middleware.query, (req, res, next)=> {
     var where;
     if (req.query.type !== undefined) {
         where = where || {};
