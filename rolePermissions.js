@@ -24,8 +24,9 @@ module.exports = {
         prefixAdd: true,
         seeChatlogs: true,
         viewChannelLog: true,
-        view:true,
-        viewChannels:true
+        view: true,
+        viewChannels: true,
+        viewRoles: true
     },
     4: {
         ignoreSpam: true,
@@ -41,8 +42,9 @@ module.exports = {
         manageVip: true,
         manageRegular: true,
         viewChannelLog: true,
-        view:true,
-        viewChannels:true
+        view: true,
+        viewChannels: true,
+        viewRoles: true
     },
     5: {
         ignoreSpam: true,
@@ -59,8 +61,9 @@ module.exports = {
         manageRegular: true,
         manageManager: true,
         viewChannelLog: true,
-        view:true,
-        viewChannels:true
+        view: true,
+        viewChannels: true,
+        viewRoles: true
     },
     6: {
         ignoreSpam: true,
@@ -77,8 +80,9 @@ module.exports = {
         manageRegular: true,
         manageManager: true,
         viewChannelLog: true,
-        view:true,
-        viewChannels:true
+        view: true,
+        viewChannels: true,
+        viewRoles: true
     },
     7: {
         ignoreSpam: true,
@@ -96,8 +100,9 @@ module.exports = {
         manageManager: true,
         viewChannelLog: true,
         managePictures: true,
-        view:true,
-        viewChannels:true
+        view: true,
+        viewChannels: true,
+        viewRoles: true
     },
     8: {
         ignoreSpam: true,
@@ -115,8 +120,9 @@ module.exports = {
         manageManager: true,
         viewChannelLog: true,
         managePictures: true,
-        view:true,
-        viewChannels:true
+        view: true,
+        viewChannels: true,
+        viewRoles: true
     },
     9: {
         ignoreSpam: true,
@@ -134,8 +140,9 @@ module.exports = {
         manageManager: true,
         viewChannelLog: true,
         managePictures: true,
-        view:true,
-        viewChannels:true
+        view: true,
+        viewChannels: true,
+        viewRoles: true
     },
     10: {
         ignoreSpam: true,
@@ -153,7 +160,8 @@ module.exports = {
         manageManager: true,
         viewChannelLog: true,
         managePictures: true,
-        view:true,
-        viewChannels:true
+        view: true,
+        viewChannels: true,
+        viewRoles: true
     }
 };

@@ -5,7 +5,7 @@ var rolePerms = require('../rolePermissions');
 
 var exprt = {
     auth: (req, res, next)=> {
-        if (req.get('authorization')) {
+        if (req.get('authorization') !== undefined) {
             db.models.Token.find({where: {token: req.get('authorization')}}).then(token=> {
                 if (token !== null && token !== undefined) {
                     req.token = token;
@@ -14,17 +14,19 @@ var exprt = {
                             return db.models.Guild.findAll(query);
                         };
                         next();
-                        return null;
+                        //return null;
                     } else {
                         next();
-                        return null;
+                        //return null;
                     }
                 } else next({code: 401});
             }).catch(err=> {
-                next({code: 3000});
+                next({code: 5200});
                 story.error('sql', 'auth', {attach: err});
             })
-        } else next({code: 401});
+        } else {
+            next({code: 401});
+        }
     },
     catcher: (req, res, next)=> {
         next({code: 4404})
@@ -89,7 +91,9 @@ var exprt = {
                 payload = {
                     message: 'The server encountered an unknown error.',
                     error: 'unknown'
-                }
+                };
+                story.error('http','A route threw an unknown error.',{attach:err});
+                break;
         }
         res.status(err.code).json({data: payload, context: err.err_context || 'Error<ApiError>', time: new Date()});
     },
@@ -137,11 +141,15 @@ var exprt = {
             exprt.middleware.query_offset(req, res, next);
         });
     },
-    resolvePermissionGuild: (options = {perm: null, param: 'guild', required: null})=> {
+    resolvePermissionGuild: (options)=> {
+        options.param=options.param||'guild';
+        options.requireAll=options.requireAll||false;
+        options.perm=options.perm||null;
         return (req, res, next)=> {
             if (options.perm === null)return next({code: 5900});
             if (req.params[options.param] === undefined)return next({code: 5900});
-            exprt.auth(req, res, ()=> {
+            exprt.auth(req, res, (err)=> {
+                if(err) return next(err);
                 if (req.token.type === 'system')next();
                 else if (req.token.type === 'user')req.token.getUser().then(user=> {
                     if (user.custom_role > 5) {
@@ -154,7 +162,19 @@ var exprt = {
                     })
                 }).spread(role=> {
                     if (role !== undefined && role !== null) {
-                        if (rolePerms[role.level][options.perm])next();
+                        if (Array.isArray(options.perm)) {
+                            if (options.requireAll) {
+                                for (let e in options.perm) {
+                                    if (!rolePerms[role.level][e])return next({code: 403});
+                                }
+                                next();
+                            } else {
+                                for (let e in options.perm) {
+                                    if (rolePerms[role.level][e])return next();
+                                }
+                                next({code: 403});
+                            }
+                        } else if (rolePerms[role.level][options.perm])next();
                         else next({code: 403});
                     } else next({code: 403});
                 });

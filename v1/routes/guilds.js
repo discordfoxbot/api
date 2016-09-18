@@ -81,4 +81,71 @@ app.get('/:guild/channels', middleware.resolvePermissionGuild({perm: 'viewChanne
     })
 });
 
+app.get('/:guild/channels/:channel', middleware.resolvePermissionGuild({perm: 'viewChannels'}), (req, res, next)=> {
+    req.token.getGuilds({where: {gid: req.params.guild}}).spread(guild=> {
+        if (guild !== undefined && guild !== null) {
+            guild.getChannels({where: {cid: req.params.channel}}).spread((channel)=> {
+                res.apijson({id: channel.cid, name: channel.name}, {context: 'Object<Channel>'});
+            });
+        } else next({code: 403});
+    }).catch(err=> {
+        next({code: 5200});
+        story.error('sql', 'auth', {attach: err});
+    })
+});
+
+app.get('/:guild/roles', middleware.resolvePermissionGuild({perm: 'viewRoles'}), (req, res, next)=> {
+    req.token.getGuilds({where: {gid: req.params.guild}}).spread(guild=> {
+        if (guild !== undefined && guild !== null) {
+            guild.getGuildRoles().then(roles=> {
+                Promise.all(roles.map(role=>role.getUser())).then(users=> {
+                    users = users.map(user=> {
+                        return {id: user.uid, username: user.username, discriminator: user.discriminator}
+                    });
+                    res.apijson(roles.map(role=> {
+                        return {level: role.level, guild: guild.gid, user: users[roles.indexOf(role)]}
+                    }), {context: 'Array<Role>'});
+                });
+            });
+        } else next({code: 403});
+    }).catch(err=> {
+        next({code: 5200});
+        story.error('sql', 'auth', {attach: err});
+    })
+});
+
+app.get('/:guild/roles/:user', middleware.resolvePermissionGuild({perm: 'viewRoles'}), (req, res, next)=> {
+    req.token.getGuilds({where: {gid: req.params.guild}}).spread(guild=> {
+        if (guild !== undefined && guild !== null) {
+            guild.getGuildRoles({include: [{model: db.models.User, where: {uid: req.params.user}}]}).spread(role=> {
+                if (role !== undefined && role !== null) {
+                    return role.getUser().then(user=> {
+                        res.apijson({
+                            level: role.level,
+                            guild: guild.gid,
+                            user: {id: user.uid, username: user.username, discriminator: user.discriminator}
+                        }, {context: 'Object<Role>'});
+                    });
+                } else {
+                    return db.models.User.find({
+                        where: {uid: req.params.user},
+                        include: [{model: db.models.Guild, where: {gid: req.params.guild}}]
+                    }).then(user=> {
+                        if (user !== undefined && user !== null) {
+                            res.apijson({
+                                level: 0,
+                                guild: req.params.guild,
+                                user: {id: user.uid, username: user.username, discriminator: user.discriminator}
+                            }, {context: 'Object<Role>'});
+                        } else next({code: 404});
+                    })
+                }
+            });
+        } else next({code: 403});
+    }).catch(err=> {
+        next({code: 5200});
+        story.error('sql', 'auth', {attach: err});
+    })
+});
+
 module.exports = app;
