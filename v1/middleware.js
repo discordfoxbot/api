@@ -110,6 +110,12 @@ var exprt = {
         };
         next();
     },
+    caching: ()=> {
+        return (req, res, next)=> {
+            res.set({'Cache-Control': 'no-cache, no-store, must-revalidate', expires: new Date()});
+            next();
+        }
+    },
     query_limit: (req, res, next) => {
         req.parsed_query = req.parsed_query || {};
         req.parsed_query.limit = 25;

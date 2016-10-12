@@ -6,6 +6,7 @@ var middleware = require('./middleware');
 app.use(bodyparser.json());
 
 app.use(middleware.apijson);
+app.use(middleware.caching());
 
 app.use('/characters', require('./routes/characters'));
 app.use('/chatlogs', require('./routes/chatlogs'));
