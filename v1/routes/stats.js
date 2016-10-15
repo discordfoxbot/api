@@ -9,9 +9,11 @@ app.get('/', (req, res, next)=> {
     Promise.all([
         db.models.Guild.count({where: {online: true}}),
         db.models.Guild.findAll({where: {online: true}}).then(guilds=> {
+            return Promise.all(guilds.map(guild=>guild.getMembers().then(m=>Promise.resolve(m.length))));
+        }).then(mCounts=>{
             var c = 0;
-            for (var g of guilds) {
-                c = c + g.members.size;
+            for (var e of mCounts) {
+                c = e + c;
             }
             return Promise.resolve(c);
         }),
