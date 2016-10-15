@@ -20,4 +20,8 @@ app.get('/', (req, res, next)=> {
     });
 });
 
+app.get('/uptime_test',(req,res)=>{
+   res.apijson(true,{context:'Boolean<Status>'});
+});
+
 module.exports = app;

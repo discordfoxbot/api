@@ -44,7 +44,8 @@ module.exports = {
         viewChannelLog: true,
         view: true,
         viewChannels: true,
-        viewRoles: true
+        viewRoles: true,
+        manageModlog:true
     },
     5: {
         ignoreSpam: true,
@@ -63,7 +64,8 @@ module.exports = {
         viewChannelLog: true,
         view: true,
         viewChannels: true,
-        viewRoles: true
+        viewRoles: true,
+        manageModlog:true
     },
     6: {
         ignoreSpam: true,
@@ -82,7 +84,8 @@ module.exports = {
         viewChannelLog: true,
         view: true,
         viewChannels: true,
-        viewRoles: true
+        viewRoles: true,
+        manageModlog:true
     },
     7: {
         ignoreSpam: true,
@@ -102,7 +105,8 @@ module.exports = {
         managePictures: true,
         view: true,
         viewChannels: true,
-        viewRoles: true
+        viewRoles: true,
+        manageModlog:true
     },
     8: {
         ignoreSpam: true,
@@ -122,7 +126,8 @@ module.exports = {
         managePictures: true,
         view: true,
         viewChannels: true,
-        viewRoles: true
+        viewRoles: true,
+        manageModlog:true
     },
     9: {
         ignoreSpam: true,
@@ -142,7 +147,8 @@ module.exports = {
         managePictures: true,
         view: true,
         viewChannels: true,
-        viewRoles: true
+        viewRoles: true,
+        manageModlog:true
     },
     10: {
         ignoreSpam: true,
@@ -162,6 +168,7 @@ module.exports = {
         managePictures: true,
         view: true,
         viewChannels: true,
-        viewRoles: true
+        viewRoles: true,
+        manageModlog:true
     }
 };

@@ -94,6 +94,36 @@ app.get('/:guild/channels/:channel', middleware.resolvePermissionGuild({perm: 'v
     })
 });
 
+app.patch('/:guild/channels/:channel', middleware.resolvePermissionGuild({perm: 'manageModlog'}), (req, res, next)=> {
+    req.token.getGuilds({where: {gid: req.params.guild}}).spread(guild=> {
+        return guild.getChannels({where: {cid: req.params.channel}}).spread(channel=> {
+            if (channel !== null && channel !== undefined) {
+                var keys = ['modlog'];
+                var promises = [Promise.resolve()];
+                for (var e in req.body) {
+                    if (keys.includes(e)) {
+                        var updates = {};
+                        updates[e] = typeof req.body[e] === 'boolean' ? req.body[e] : false;
+                        promises.push(channel.update(updates));
+                    }
+                }
+                return Promise.all(promises).then(()=> {
+                    return guild.getChannels({where: {cid: req.params.channel}});
+                }).spread(channel=> {
+                    res.apijson({
+                        id: channel.id,
+                        name: channel.name,
+                        modlog: channel.modlog
+                    }, {context: 'Object<ExtendedChannel>'});
+                })
+            } else next({code: 404});
+        });
+    }).catch(err=> {
+        next({code: 5200});
+        story.error('sql', 'auth', {attach: err});
+    })
+});
+
 app.get('/:guild/roles', middleware.resolvePermissionGuild({perm: 'viewRoles'}), (req, res, next)=> {
     req.token.getGuilds({where: {gid: req.params.guild}}).spread(guild=> {
         if (guild !== undefined && guild !== null) {
