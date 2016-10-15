@@ -8,10 +8,23 @@ var db = require('../../db');
 app.get('/', (req, res, next)=> {
     Promise.all([
         db.models.Guild.count({where: {online: true}}),
-        //db.models.User.count({where: {online: true}}),
-        db.redis.hget('stats', 'users').then(c=>Promise.resolve(parseInt(c))),
+        db.models.Guild.findAll({where: {online: true}}).then(guilds=> {
+            var c = 0;
+            for (var g of guilds) {
+                c = c + g.members.size;
+            }
+            return Promise.resolve(c);
+        }),
         db.models.Message.count({where: {created_at: {$gt: moment().subtract(1, 'minutes').toDate()}}}),
-        db.redis.hget('stats', 'channels').then(c=>Promise.resolve(parseInt(c)))
+        db.models.Guild.findAll({where: {online: true}}).then(guilds=> {
+            return Promise.all(guilds.map(guild=>guild.getChannels().then(chs=>Promise.resolve(chs.length))))
+        }).then(channelCounts=> {
+            var c = 0;
+            for (var e of channelCounts) {
+                c = e + c;
+            }
+            return Promise.resolve(c);
+        })
     ]).spread((g, u, m, c)=> {
         res.apijson({u, g, m, c}, {context: 'Object<Stats>'});
     }).catch((err)=> {
@@ -20,8 +33,8 @@ app.get('/', (req, res, next)=> {
     });
 });
 
-app.get('/uptime_test',(req,res)=>{
-   res.apijson(true,{context:'Boolean<Status>'});
+app.get('/uptime_test', (req, res)=> {
+    res.apijson(true, {context: 'Boolean<Status>'});
 });
 
 module.exports = app;

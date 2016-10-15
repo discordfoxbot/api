@@ -92,7 +92,7 @@ var exprt = {
                     message: 'The server encountered an unknown error.',
                     error: 'unknown'
                 };
-                story.error('http','A route threw an unknown error.',{attach:err});
+                story.error('http', 'A route threw an unknown error.', {attach: err});
                 break;
         }
         res.status(err.code).json({data: payload, context: err.err_context || 'Error<ApiError>', time: new Date()});
@@ -148,14 +148,14 @@ var exprt = {
         });
     },
     resolvePermissionGuild: (options)=> {
-        options.param=options.param||'guild';
-        options.requireAll=options.requireAll||false;
-        options.perm=options.perm||null;
+        options.param = options.param || 'guild';
+        options.requireAll = options.requireAll || false;
+        options.perm = options.perm || null;
         return (req, res, next)=> {
             if (options.perm === null)return next({code: 5900});
             if (req.params[options.param] === undefined)return next({code: 5900});
             exprt.auth(req, res, (err)=> {
-                if(err) return next(err);
+                if (err) return next(err);
                 if (req.token.type === 'system')next();
                 else if (req.token.type === 'user')req.token.getUser().then(user=> {
                     if (user.custom_role > 5) {
