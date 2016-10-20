@@ -95,7 +95,12 @@ var exprt = {
                 story.error('http', 'A route threw an unknown error.', {attach: err});
                 break;
         }
-        res.status(err.code).json({data: payload, context: err.err_context || 'Error<ApiError>', time: new Date()});
+        res.status(err.code).json({
+            data: payload,
+            context: err.err_context || 'Error<ApiError>',
+            time: new Date(),
+            meta: req.hostname === 'foxbot.fuechschen.org' ? 'This API-Url is deprecated and is only supported for legacy clients. Use https://kitsune.fuechschen.org/api/v1 for all new clients.' : null
+        });
     },
     apijson: (req, res, next)=> {
         res.apijson = (data, meta = {})=> {
