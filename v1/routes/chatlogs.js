@@ -12,6 +12,18 @@ app.get('/:id', (req, res, next)=> {
                     res.status(200).apijson({
                         id: log.id,
                         time: log.time,
+                        guild: {
+                            id: guild.gid,
+                            name: guild.name
+                        },
+                        channel: {
+                            id: channel.cid,
+                            name: channel.name
+                        },
+                        user: {
+                            id: user.uid,
+                            username: user.username
+                        },
                         messages: msgs.map(msg=> {
                             return {
                                 id: msg.mid,
