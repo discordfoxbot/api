@@ -30,7 +30,7 @@ app.get('/', (req, res, next)=> {
                     return Promise.resolve(c);
                 })
             ]).spread((g, u, m, c)=> {
-                res.apijson({u, g, m, c}, {context: 'Object<Stats>'});
+                res.apijson({u, g, m, c}, {context: 'Object<Stats>', cache: false});
                 return Promise.all([
                     db.redis.hset('statscache', 'g', g),
                     db.redis.hset('statscache', 'u', u),
@@ -47,7 +47,7 @@ app.get('/', (req, res, next)=> {
                     g: parseInt(cache.g),
                     m: parseInt(cache.m),
                     c: parseInt(cache.c)
-                }, {context: 'Object<Stats>'});
+                }, {context: 'Object<Stats>', cache: true});
             })
         }
     }).catch((err)=> {

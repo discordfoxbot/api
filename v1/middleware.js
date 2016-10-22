@@ -111,6 +111,7 @@ var exprt = {
                 total: meta.total || undefined,
                 next: meta.next || undefined,
                 time: new Date(),
+                cache: meta.cache ? meta.cache : false,
                 meta: req.hostname === 'foxbot.fuechschen.org' ? 'This API-Url is deprecated and is only supported for legacy clients. Use https://kitsune.fuechschen.org/api/v1 for all new clients.' : null
             })
         };
