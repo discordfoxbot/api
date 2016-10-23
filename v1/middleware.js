@@ -25,9 +25,31 @@ var exprt = {
                     next({code: 5200});
                     story.error('sql', 'auth', {attach: err});
                 })
-            } else {
-                next({code: 401});
-            }
+            } else next({code: 401});
+        }
+    },
+    resolveAuth: ()=> {
+        return (req, res, next)=> {
+            if (req.get('authorization') !== undefined) {
+                db.models.Token.find({where: {token: req.get('authorization')}}).then(token=> {
+                    if (token !== null && token !== undefined) {
+                        req.token = token;
+                        if (token.type === 'system') {
+                            token.getGuilds = (query = {where: {online: true}})=> {
+                                return db.models.Guild.findAll(query);
+                            };
+                            next();
+                            //return null;
+                        } else {
+                            next();
+                            //return null;
+                        }
+                    } else next();
+                }).catch(err=> {
+                    next();
+                    story.error('sql', 'auth', {attach: err});
+                })
+            } else next();
         }
     },
     catcher: ()=> {
@@ -175,17 +197,24 @@ var exprt = {
     },
     query_limit: () => {
         return (req, res, next)=> {
-            req.parsed_query = req.parsed_query || {};
-            req.parsed_query.limit = 25;
-            if (req.query.limit !== undefined) {
-                var l = parseInt(req.query.limit);
-                if (!isNaN(l)) {
-                    if (l > 100) req.parsed_query.limit = 100;
-                    else if (l < 1) req.parsed_query.limit = 1;
-                    else req.parsed_query.limit = l;
+            exprt.resolveAuth()(req, res, ()=> {
+                req.parsed_query = req.parsed_query || {};
+                req.parsed_query.limit = 25;
+                if (req.query.limit !== undefined) {
+                    var l = parseInt(req.query.limit);
+                    if (!isNaN(l)) {
+                        if (l > 100) {
+                            if (req.token) {
+                                if (req.token.type === 'system')req.parsed_query.limit = l;
+                                else req.parsed_query.limit = 100;
+                            } else req.parsed_query.limit = 100;
+                        }
+                        else if (l < 1) req.parsed_query.limit = 1;
+                        else req.parsed_query.limit = l;
+                    }
                 }
-            }
-            next();
+                next();
+            });
         }
     },
     //middleware to parse ?offset to be passed to sequelize
