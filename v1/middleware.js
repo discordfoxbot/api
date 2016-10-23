@@ -150,8 +150,8 @@ var exprt = {
     },
     //middleware that combines query_offset and query_limit
     query: (req, res, next)=> {
-        exprt.middleware.query_limit(req, res, function () {
-            exprt.middleware.query_offset(req, res, next);
+        exprt.query_limit(req, res, function () {
+            exprt.query_offset(req, res, next);
         });
     },
     resolvePermissionGuild: (options)=> {
