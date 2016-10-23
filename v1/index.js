@@ -9,12 +9,18 @@ app.use(middleware.apijson());
 app.use(middleware.caching());
 app.use(middleware.cors());
 
+app.use('/', require('./routes/index'));
 app.use('/characters', require('./routes/characters'));
 app.use('/chatlogs', require('./routes/chatlogs'));
-app.use('/github', require('./routes/github'));
-app.use('/vcsfeed', require('./routes/vcsfeed'));
+app.use('/vcsfeeds', require('./routes/vcsfeed'));
 app.use('/guilds', require('./routes/guilds'));
 app.use('/stats', require('./routes/stats'));
+
+//legacy loads
+app.use('/vcsfeed', require('./routes/vcsfeed'));
+app.use('/github', require('./routes/github'));
+app.use('/gitlab',require('./routes/gitlab'));
+
 app.use(middleware.catcher());
 
 app.use(middleware.error());

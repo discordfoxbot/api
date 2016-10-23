@@ -149,7 +149,6 @@ var exprt = {
     apijson: ()=> {
         return (req, res, next)=> {
             res.apijson = (data, meta = {})=> {
-                console.log(meta);
                 res.json({
                     data,
                     context: meta.context,
