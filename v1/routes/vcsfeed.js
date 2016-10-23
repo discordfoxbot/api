@@ -5,7 +5,13 @@ var db = require('../../db');
 app.post('/:id', (req, res)=> {
     db.models.VCSFeed.find({where: {id: req.params.id}}).then(feed=> {
         if (feed !== undefined && feed !== null) {
-            if (req.query.type === 'github') {
+            var type = function (queryparam) {
+                if (['github', 'gitlab'].includes(queryparam))return queryparam;
+                else if (req.get('user-agent').contains('GitHub-Hookshot') || req.get('X-Gitlab-Event') !== undefined)return 'github';
+                else if (req.get('x-gitlab-event') !== undefined)return 'gitlab';
+                else return null;
+            }(req.query.type);
+            if (type === 'github') {
                 res.status(204).end();
                 if (feed.last_gh_event !== req.get('X-GitHub-Delivery')) {
                     feed.update({
@@ -21,7 +27,7 @@ app.post('/:id', (req, res)=> {
                         });
                     }
                 }
-            } else {
+            } else if (type === 'gitlab') {
                 if (['Push Hook'].includes(req.get('X-Gitlab-Event'))) {
                     feed.getChannel().then(channel=> {
                         db.sendEvent('gitlabUpdate', {
@@ -31,7 +37,7 @@ app.post('/:id', (req, res)=> {
                         });
                     });
                 }
-            }
+            } else res.status(400).json({error: 'source not identifiable'});
         } else res.status(404).json({error: 'webhook not found'});
     });
 });

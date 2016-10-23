@@ -35,7 +35,9 @@ app.get('/:guild', middleware.resolvePermissionGuild({perm: 'view'}), (req, res,
                     name: guild.name,
                     region: guild.region,
                     prefixes: prefixes.map(prefix=>prefix.prefix),
-                    channels: channels.map(channel=>channel.cid),
+                    channels: channels.map(channel=> {
+                        return {id: channel.cid, name: channel.name}
+                    }),
                     shard: guild.shard_id
                 }, {context: 'Object<Guild>'});
             });
@@ -71,7 +73,7 @@ app.get('/:guild/channels', middleware.resolvePermissionGuild({perm: 'viewChanne
         if (guild !== undefined && guild !== null) {
             guild.getChannels().then((channels)=> {
                 res.apijson(channels.map(channel=> {
-                    return {id: channel.cid, name: channel.name,}
+                    return {id: channel.cid, name: channel.name, guild: {id: guild.gid, name: guild.name}}
                 }), {context: 'Array<Channel>'});
             });
         } else next({code: 403});
@@ -85,7 +87,11 @@ app.get('/:guild/channels/:channel', middleware.resolvePermissionGuild({perm: 'v
     req.token.getGuilds({where: {gid: req.params.guild}}).spread(guild=> {
         if (guild !== undefined && guild !== null) {
             guild.getChannels({where: {cid: req.params.channel}}).spread((channel)=> {
-                res.apijson({id: channel.cid, name: channel.name}, {context: 'Object<Channel>'});
+                res.apijson({
+                    id: channel.cid,
+                    name: channel.name,
+                    guild: {id: guild.gid, name: guild.name}
+                }, {context: 'Object<Channel>'});
             });
         } else next({code: 403});
     }).catch(err=> {
@@ -133,7 +139,11 @@ app.get('/:guild/roles', middleware.resolvePermissionGuild({perm: 'viewRoles'}),
                         return {id: user.uid, username: user.username, discriminator: user.discriminator}
                     });
                     res.apijson(roles.map(role=> {
-                        return {level: role.level, guild: guild.gid, user: users[roles.indexOf(role)]}
+                        return {
+                            level: role.level,
+                            guild: {id: guild.gid, name: guild.name},
+                            user: users[roles.indexOf(role)]
+                        }
                     }), {context: 'Array<Role>'});
                 });
             });
@@ -152,7 +162,7 @@ app.get('/:guild/roles/:user', middleware.resolvePermissionGuild({perm: 'viewRol
                     return role.getUser().then(user=> {
                         res.apijson({
                             level: role.level,
-                            guild: guild.gid,
+                            guild: {id: guild.gid, name: guild.name},
                             user: {id: user.uid, username: user.username, discriminator: user.discriminator}
                         }, {context: 'Object<Role>'});
                     });
@@ -164,7 +174,7 @@ app.get('/:guild/roles/:user', middleware.resolvePermissionGuild({perm: 'viewRol
                         if (user !== undefined && user !== null) {
                             res.apijson({
                                 level: 0,
-                                guild: req.params.guild,
+                                guild: {id: guild.gid, name: guild.name},
                                 user: {id: user.uid, username: user.username, discriminator: user.discriminator}
                             }, {context: 'Object<Role>'});
                         } else next({code: 404});
