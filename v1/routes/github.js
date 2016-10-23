@@ -2,6 +2,12 @@ var app = require('express').Router();
 
 var db = require('../../db');
 
+var middleware = require('../middleware');
+
+app.head('/:id', middleware.cors(['__none__']), (req, res)=> {
+    res.status(200).end()
+});
+
 app.post('/:id', (req, res)=> {
     db.models.VCSFeed.find({where: {id: req.params.id}}).then(feed=> {
         if (feed !== undefined && feed !== null) {

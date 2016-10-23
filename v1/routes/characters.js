@@ -5,7 +5,7 @@ var Promise = require('bluebird');
 var db = require('../../db');
 var middleware = require('../middleware');
 
-app.get('/', middleware.query, (req, res, next)=> {
+app.get('/', middleware.query(), (req, res, next)=> {
     var where;
     if (req.query.type !== undefined) {
         where = where || {};
@@ -91,5 +91,7 @@ app.get('/:id', (req, res, next)=> {
         story.warn('SQL-Error', '', {attach: err});
     });
 });
+
+app.head('/*', middleware.head());
 
 module.exports = app;

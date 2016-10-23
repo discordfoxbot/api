@@ -5,7 +5,7 @@ var story = require('storyboard').mainStory;
 var db = require('../../db');
 var middleware = require('../middleware');
 
-app.get('/', middleware.auth, (req, res, next)=> {
+app.get('/', middleware.auth(), (req, res, next)=> {
     req.token.getGuilds().then(guilds=> {
         Promise.join(Promise.all(guilds.map(guild=>guild.getPrefixes())), Promise.all(guilds.map(guild=>guild.getChannels())), (prefixes, channels)=> {
                 res.apijson(guilds.map(guild=> {
@@ -187,5 +187,7 @@ app.get('/:guild/roles/:user', middleware.resolvePermissionGuild({perm: 'viewRol
         story.error('sql', 'auth', {attach: err});
     })
 });
+
+app.head('/*', middleware.head());
 
 module.exports = app;

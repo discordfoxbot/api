@@ -3,6 +3,7 @@ var Promise = require('bluebird');
 var story = require('storyboard').mainStory;
 
 var db = require('../../db');
+var middleware = require('../middleware');
 
 app.get('/:id', (req, res, next)=> {
     db.models.ChatLog.find({where: {id: req.params.id}}).then(log=> {
@@ -49,5 +50,7 @@ app.get('/:id', (req, res, next)=> {
         story.warn('SQL-Error', '', {attach: err});
     });
 });
+
+app.head('/*', middleware.head());
 
 module.exports = app;

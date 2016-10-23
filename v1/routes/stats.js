@@ -4,6 +4,7 @@ var moment = require('moment');
 var story = require('storyboard').mainStory;
 
 var db = require('../../db');
+var middleware = require('../middleware');
 
 app.get('/', (req, res, next)=> {
     db.redis.exists('statscache').then(ex=> {
@@ -59,5 +60,7 @@ app.get('/', (req, res, next)=> {
 app.get('/uptime_test', (req, res)=> {
     res.apijson(true, {context: 'Boolean<Status>'});
 });
+
+app.head('/*', middleware.head());
 
 module.exports = app;
