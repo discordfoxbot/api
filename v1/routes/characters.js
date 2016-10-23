@@ -45,7 +45,7 @@ app.get('/', middleware.query(), (req, res, next)=> {
             }), {
                 total: result.count,
                 offset: req.parsed_query.offset || 0,
-                next: ((result.rows.length < req.parsed_query.limit || result.count === req.parsed_query.limit + req.parsed_query.offset) ? null : {
+                next: (result.rows.length < req.parsed_query.limit || result.count === req.parsed_query.limit + req.parsed_query.offset) ? null : {
                     offset: req.parsed_query.offset + req.parsed_query.limit,
                     link: req.protocol + '://' + req.hostname + req.baseUrl + req.path + function () {
                         var ret = '?';
@@ -54,7 +54,7 @@ app.get('/', middleware.query(), (req, res, next)=> {
                         ret += 'offset=' + (req.parsed_query.offset + req.parsed_query.limit);
                         return ret;
                     }()
-                }),
+                },
                 context: 'Array<Character>'
             })
         });

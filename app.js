@@ -2,7 +2,6 @@ process.env.NODE_ENV = 'development';
 
 var express = require('express'),
     storyboard = require('storyboard'),
-    xmlparser = require('js2xmlparser'),
     morgan = require('morgan'),
     Promise = require('bluebird');
 

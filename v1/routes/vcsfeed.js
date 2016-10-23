@@ -23,6 +23,7 @@ app.post('/:id', (req, res)=> {
                         last_gh_event: req.get('X-GitHub-Delivery')
                     });
                     if (['push', 'watch', 'pull_request'].includes(req.get('X-GitHub-Event'))) {
+                        //noinspection JSUnresolvedFunction
                         feed.getChannel().then(channel=> {
                             db.sendEvent('githubUpdate', {
                                 payload: req.body,
@@ -34,6 +35,7 @@ app.post('/:id', (req, res)=> {
                 }
             } else if (type === 'gitlab') {
                 if (['Push Hook'].includes(req.get('X-Gitlab-Event'))) {
+                    //noinspection JSUnresolvedFunction
                     feed.getChannel().then(channel=> {
                         db.sendEvent('gitlabUpdate', {
                             payload: req.body,

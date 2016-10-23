@@ -12,6 +12,7 @@ var exprt = {
                         req.token = token;
                         if (token.type === 'system') {
                             token.getGuilds = (query = {where: {online: true}})=> {
+                                //noinspection JSUnresolvedFunction
                                 return db.models.Guild.findAll(query);
                             };
                             next();
@@ -36,6 +37,7 @@ var exprt = {
                         req.token = token;
                         if (token.type === 'system') {
                             token.getGuilds = (query = {where: {online: true}})=> {
+                                //noinspection JSUnresolvedFunction
                                 return db.models.Guild.findAll(query);
                             };
                             next();
@@ -147,15 +149,16 @@ var exprt = {
     apijson: ()=> {
         return (req, res, next)=> {
             res.apijson = (data, meta = {})=> {
+                console.log(meta);
                 res.json({
                     data,
                     context: meta.context,
                     count: (Array.isArray(data) ? data.length : undefined),
-                    total: meta.total || undefined,
-                    next: meta.next || undefined,
+                    total: meta.total,
+                    next: meta.next,
                     time: new Date(),
                     cache: meta.cache ? meta.cache : false,
-                    meta: req.hostname === 'foxbot.fuechschen.org' ? 'This API-Url is deprecated and is only supported for legacy clients. Use https://kitsune.fuechschen.org/api/v1 for all new clients.' : null
+                    meta: req.hostname === 'foxbot.fuechschen.org' ? 'This API-Url is deprecated and is only supported for legacy clients. Use https://kitsune.fuechschen.org/api/v1 for all new clients.' : undefined
                 })
             };
             next();
@@ -249,33 +252,39 @@ var exprt = {
             exprt.auth()(req, res, (err)=> {
                 if (err) return next(err);
                 if (req.token.type === 'system')next();
-                else if (req.token.type === 'user')req.token.getUser().then(user=> {
-                    if (user.custom_role > 5) {
-                        next();
-                    } else return user.getGuildRoles({
-                        include: [{
-                            model: db.models.Guild,
-                            where: {gid: req.params[options.param]}
-                        }]
-                    })
-                }).spread(role=> {
-                    if (role !== undefined && role !== null) {
-                        if (Array.isArray(options.perm)) {
-                            if (options.requireAll) {
-                                for (let e in options.perm) {
-                                    if (!rolePerms[role.level][e])return next({code: 403});
+                else if (req.token.type === 'user') { //noinspection JSUnresolvedFunction
+                    req.token.getUser().then(user=> {
+                        if (user.custom_role > 5) {
+                            next();
+                        } else { //noinspection JSUnresolvedFunction
+                            return user.getGuildRoles({
+                                include: [{
+                                    model: db.models.Guild,
+                                    where: {gid: req.params[options.param]}
+                                }]
+                            })
+                        }
+                    }).spread(role=> {
+                        if (role !== undefined && role !== null) {
+                            if (Array.isArray(options.perm)) {
+                                if (options.requireAll) {
+                                    for (let e in options.perm) {
+                                        //noinspection JSUnfilteredForInLoop
+                                        if (!rolePerms[role.level][e])return next({code: 403});
+                                    }
+                                    next();
+                                } else {
+                                    for (let e in options.perm) {
+                                        //noinspection JSUnfilteredForInLoop
+                                        if (rolePerms[role.level][e])return next();
+                                    }
+                                    next({code: 403});
                                 }
-                                next();
-                            } else {
-                                for (let e in options.perm) {
-                                    if (rolePerms[role.level][e])return next();
-                                }
-                                next({code: 403});
-                            }
-                        } else if (rolePerms[role.level][options.perm])next();
-                        else next({code: 403});
-                    } else next({code: 403});
-                });
+                            } else if (rolePerms[role.level][options.perm])next();
+                            else next({code: 403});
+                        } else next({code: 403});
+                    });
+                }
             });
         }
     }
