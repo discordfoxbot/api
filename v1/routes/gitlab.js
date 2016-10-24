@@ -12,6 +12,7 @@ app.post('/:id', (req, res)=> {
         if (feed !== undefined && feed !== null) {
                 res.status(204).end();
                 if (['Push Hook'].includes(req.get('X-Gitlab-Event'))) {
+                    //noinspection JSUnresolvedFunction
                     feed.getChannel().then(channel=> {
                         db.sendEvent('gitlabUpdate', {
                             payload: req.body,

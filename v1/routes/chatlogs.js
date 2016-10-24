@@ -8,7 +8,9 @@ var middleware = require('../middleware');
 app.get('/:id', (req, res, next)=> {
     db.models.ChatLog.find({where: {id: req.params.id}}).then(log=> {
         if (log !== null && log !== undefined) {
+            //noinspection JSUnresolvedFunction
             log.getChatLogMessages({order: [['timestamp', 'ASC']]}).then(msgs=> {
+                //noinspection JSUnresolvedFunction
                 Promise.join(log.getChannel(), log.getUser(), log.getGuild(), Promise.all(msgs.map(msg=>msg.getUser())), (channel, user, guild, msgusers)=> {
                     res.status(200).apijson({
                         id: log.id,

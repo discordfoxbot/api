@@ -7,6 +7,7 @@ var middleware = require('../middleware');
 
 app.get('/', middleware.auth(), (req, res, next)=> {
     req.token.getGuilds().then(guilds=> {
+        //noinspection JSUnresolvedFunction
         Promise.join(Promise.all(guilds.map(guild=>guild.getPrefixes())), Promise.all(guilds.map(guild=>guild.getChannels())), (prefixes, channels)=> {
                 res.apijson(guilds.map(guild=> {
                     return {
@@ -29,6 +30,7 @@ app.get('/', middleware.auth(), (req, res, next)=> {
 app.get('/:guild', middleware.resolvePermissionGuild({perm: 'view'}), (req, res, next)=> {
     req.token.getGuilds({where: {gid: req.params.guild}}).spread(guild=> {
         if (guild !== undefined && guild !== null) {
+            //noinspection JSUnresolvedFunction
             Promise.join(guild.getPrefixes(), guild.getChannels(), (prefixes, channels)=> {
                 res.apijson({
                     id: guild.gid,
@@ -51,6 +53,7 @@ app.get('/:guild', middleware.resolvePermissionGuild({perm: 'view'}), (req, res,
 app.get('/:guild/members', middleware.resolvePermissionGuild({perm: 'view'}), (req, res, next)=> {
     req.token.getGuilds({where: {gid: req.params.guild}}).spread(guild=> {
         if (guild !== undefined && guild !== null) {
+            //noinspection JSUnresolvedFunction
             guild.getUsers().then((users)=> {
                 res.apijson(users.map(user=> {
                     return {
@@ -71,6 +74,7 @@ app.get('/:guild/members', middleware.resolvePermissionGuild({perm: 'view'}), (r
 app.get('/:guild/channels', middleware.resolvePermissionGuild({perm: 'viewChannels'}), (req, res, next)=> {
     req.token.getGuilds({where: {gid: req.params.guild}}).spread(guild=> {
         if (guild !== undefined && guild !== null) {
+            //noinspection JSUnresolvedFunction
             guild.getChannels().then((channels)=> {
                 res.apijson(channels.map(channel=> {
                     return {id: channel.cid, name: channel.name, guild: {id: guild.gid, name: guild.name}}
@@ -86,6 +90,7 @@ app.get('/:guild/channels', middleware.resolvePermissionGuild({perm: 'viewChanne
 app.get('/:guild/channels/:channel', middleware.resolvePermissionGuild({perm: 'viewChannels'}), (req, res, next)=> {
     req.token.getGuilds({where: {gid: req.params.guild}}).spread(guild=> {
         if (guild !== undefined && guild !== null) {
+            //noinspection JSUnresolvedFunction
             guild.getChannels({where: {cid: req.params.channel}}).spread((channel)=> {
                 res.apijson({
                     id: channel.cid,
@@ -102,18 +107,22 @@ app.get('/:guild/channels/:channel', middleware.resolvePermissionGuild({perm: 'v
 
 app.patch('/:guild/channels/:channel', middleware.resolvePermissionGuild({perm: 'manageModlog'}), (req, res, next)=> {
     req.token.getGuilds({where: {gid: req.params.guild}}).spread(guild=> {
+        //noinspection JSUnresolvedFunction
         return guild.getChannels({where: {cid: req.params.channel}}).spread(channel=> {
             if (channel !== null && channel !== undefined) {
                 var keys = ['modlog'];
                 var promises = [Promise.resolve()];
                 for (var e in req.body) {
+                    //noinspection JSUnfilteredForInLoop
                     if (keys.includes(e)) {
                         var updates = {};
+                        //noinspection JSUnfilteredForInLoop
                         updates[e] = typeof req.body[e] === 'boolean' ? req.body[e] : false;
                         promises.push(channel.update(updates));
                     }
                 }
                 return Promise.all(promises).then(()=> {
+                    //noinspection JSUnresolvedFunction
                     return guild.getChannels({where: {cid: req.params.channel}});
                 }).spread(channel=> {
                     res.apijson({
@@ -133,7 +142,9 @@ app.patch('/:guild/channels/:channel', middleware.resolvePermissionGuild({perm: 
 app.get('/:guild/roles', middleware.resolvePermissionGuild({perm: 'viewRoles'}), (req, res, next)=> {
     req.token.getGuilds({where: {gid: req.params.guild}}).spread(guild=> {
         if (guild !== undefined && guild !== null) {
+            //noinspection JSUnresolvedFunction
             guild.getGuildRoles().then(roles=> {
+                //noinspection JSUnresolvedFunction
                 Promise.all(roles.map(role=>role.getUser())).then(users=> {
                     users = users.map(user=> {
                         return {id: user.uid, username: user.username, discriminator: user.discriminator}
@@ -157,8 +168,10 @@ app.get('/:guild/roles', middleware.resolvePermissionGuild({perm: 'viewRoles'}),
 app.get('/:guild/roles/:user', middleware.resolvePermissionGuild({perm: 'viewRoles'}), (req, res, next)=> {
     req.token.getGuilds({where: {gid: req.params.guild}}).spread(guild=> {
         if (guild !== undefined && guild !== null) {
+            //noinspection JSUnresolvedFunction
             guild.getGuildRoles({include: [{model: db.models.User, where: {uid: req.params.user}}]}).spread(role=> {
                 if (role !== undefined && role !== null) {
+                    //noinspection JSUnresolvedFunction
                     return role.getUser().then(user=> {
                         res.apijson({
                             level: role.level,

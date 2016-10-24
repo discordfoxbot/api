@@ -6,7 +6,8 @@ var db = require('../../db');
 var middleware = require('../middleware');
 
 app.get('/', middleware.query(), (req, res, next)=> {
-    var where;
+    /** @namespace req.query.pic_verified */
+    var where = undefined;
     if (req.query.type !== undefined) {
         where = where || {};
         where.type = req.query.type;
@@ -21,15 +22,19 @@ app.get('/', middleware.query(), (req, res, next)=> {
         offset: req.parsed_query.offset,
         order: [['id', 'ASC']]
     }).then((result)=> {
+        if (result.rows.length === 0) {
+            req.query_errors = req.query_errors || {};
+            req.query_errors.offset = true;
+        }
         return Promise.all(result.rows.map((character)=> {
             var q = {verified: true};
             if (req.query.pic_verified !== undefined) {
-                if (['true', 'false'].indexOf(req.query.pic_verified)) {
+                if (['true', 'false'].indexOf(req.query.pic_verified)) { //noinspection JSValidateTypes
                     q.verified = req.query.pic_verified !== 'false';
-                } else {
-                    q = undefined;
                 }
+                else q = undefined;
             }
+            //noinspection JSUnresolvedFunction
             return character.getCharacterPictures({where: q});
         })).then((pictures)=> {
             res.apijson(result.rows.map((row)=> {
@@ -68,12 +73,11 @@ app.get('/:id', (req, res, next)=> {
     db.models.Character.find({where: {id: req.params.id}}).then((c)=> {
         var q = {verified: true};
         if (req.query.pic_verified !== undefined) {
-            if (['true', 'false'].indexOf(req.query.pic_verified)) {
+            if (['true', 'false'].indexOf(req.query.pic_verified)) {//noinspection JSValidateTypes
                 q.verified = req.query.pic_verified !== 'false';
-            } else {
-                q = undefined;
-            }
+            } else q = undefined;
         }
+        //noinspection JSUnresolvedFunction
         return c.getCharacterPictures({where: q}).then((pics)=> {
             res.apijson([{
                     id: c.id,

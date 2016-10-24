@@ -18,6 +18,7 @@ if (process.env.NODE_ENV === 'development') {
 
 app.set('trust proxy', 'loopback');
 
+//noinspection JSUnusedGlobalSymbols
 app.use(morgan('short', {
     stream: {
         write: (toLog)=> {

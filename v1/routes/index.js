@@ -1,7 +1,7 @@
 var app = require('express').Router();
 
-app.get('/',(req,res,next)=>{
-    res.json({
+app.get('/', (req, res)=> {
+    res.apijson({
         msg:'Welcome to Kitsune-Api V1.',
         endpoints:{
             characters:'https://kitsune.fuechschen.org/api/v1/characters',
