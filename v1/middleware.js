@@ -175,11 +175,6 @@ var exprt = {
                         msg: `Limit too high. Your requested object limit was too high and therefore set to your keys maximum of ${req.query_errors.limit}`,
                         error: 'query_limit_exceeded'
                     });
-                    if (req.query_errors.offset)imeta.push({
-                        type:'error',
-                        msg: `Your requested offset was too high to return any elements.`,
-                        error: 'query_offset_exceeded'
-                    })
                 }
                 res.json({
                     data,

@@ -22,10 +22,6 @@ app.get('/', middleware.query(), (req, res, next)=> {
         offset: req.parsed_query.offset,
         order: [['id', 'ASC']]
     }).then((result)=> {
-        if (result.rows.length === 0) {
-            req.query_errors = req.query_errors || {};
-            req.query_errors.offset = true;
-        }
         return Promise.all(result.rows.map((character)=> {
             var q = {verified: true};
             if (req.query.pic_verified !== undefined) {
