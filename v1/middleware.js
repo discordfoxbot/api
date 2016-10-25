@@ -149,7 +149,7 @@ var exprt = {
                 data: payload,
                 context: err.err_context || 'Error<ApiError>',
                 time: new Date(),
-                meta: req.softErrors
+               warnings: req.warnings
             });
         }
     },
@@ -164,7 +164,7 @@ var exprt = {
                     next: meta.next,
                     time: new Date(),
                     cache: meta.cache ? meta.cache : false,
-                    meta: req.softErrors
+                   warnings: req.warnings
                 })
             };
             next();
@@ -216,7 +216,7 @@ var exprt = {
                             if (req.token.type === 'system' || req.token.limit === 0)req.parsed_query.limit = l;
                             else if (req.token.query_limit > l) {
                                 req.parsed_query.limit = 100;
-                                req.softErrors.push({
+                                req.warnings.push({
                                     type: 'error',
                                     msg: `Limit too high. Your requested object limit was too high and therefore set to your keys maximum of ${req.token.query_limit || 100}`,
                                     error: 'query_limit_exceeded'
@@ -227,7 +227,7 @@ var exprt = {
                         } else {
                             if (l > 100) {
                                 req.parsed_query.limit = 100;
-                                req.softErrors.push({
+                                req.warnings.push({
                                     type: 'error',
                                     msg: `Limit too high. Your requested object limit was too high and therefore set to your keys maximum of ${100}`,
                                     error: 'query_limit_exceeded'
@@ -319,13 +319,13 @@ var exprt = {
     },
     buildStructure: ()=> {
         return (req, res, next)=> {
-            req.softErrors = [];
+            req.warnings = [];
             next();
         }
     },
     hostnameDeprecation: ()=> {
         return (req, res, next)=> {
-            if (req.hostname === 'foxbot.fuechschen.org')req.softErrors.push({
+            if (req.hostname === 'foxbot.fuechschen.org')req.warnings.push({
                 type: 'error',
                 msg: 'This API-Url is deprecated and is only supported for legacy clients. Use https://kitsune.fuechschen.org/api/v1 for all new clients.',
                 error: 'deprecated_url'
