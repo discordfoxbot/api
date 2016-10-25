@@ -95,6 +95,12 @@ var exprt = {
                         error: 'not_found'
                     };
                     break;
+                case 429:
+                    payload = {
+                        message: `You've exceeded the ratelimit for this key. Any further request will lead to blacklisting your ip for up to 48 hours.`,
+                        error: 'rate_limit_exceeded'
+                    };
+                    break;
                 case 4006:
                     err.code = 400;
                     payload = {
@@ -139,43 +145,17 @@ var exprt = {
                     story.error('http', 'A route threw an unknown error.', {attach: err});
                     break;
             }
-            var imeta = [];
-            if (req.hostname === 'foxbot.fuechschen.org')imeta.push({
-                type:'error',
-                msg: 'This API-Url is deprecated and is only supported for legacy clients. Use https://kitsune.fuechschen.org/api/v1 for all new clients.',
-                error: 'deprecated_url'
-            });
-            if (req.query_errors) {
-                if (req.query_errors.limit)imeta.push({
-                    type:'error',
-                    msg: `Limit too high. Your requested object limit was too high and therefore set to your keys maximum of ${req.query_errors.limit}`,
-                    error: 'query_limit_exceeded'
-                })
-            }
             res.status(err.code).json({
                 data: payload,
                 context: err.err_context || 'Error<ApiError>',
                 time: new Date(),
-                meta: imeta
+                meta: req.softErrors
             });
         }
     },
     apijson: ()=> {
         return (req, res, next)=> {
             res.apijson = (data, meta = {})=> {
-                var imeta = [];
-                if (req.hostname === 'foxbot.fuechschen.org')imeta.push({
-                    type:'error',
-                    msg: 'This API-Url is deprecated and is only supported for legacy clients. Use https://kitsune.fuechschen.org/api/v1 for all new clients.',
-                    error: 'deprecated_url'
-                });
-                if (req.query_errors) {
-                    if (req.query_errors.limit)imeta.push({
-                        type:'error',
-                        msg: `Limit too high. Your requested object limit was too high and therefore set to your keys maximum of ${req.query_errors.limit}`,
-                        error: 'query_limit_exceeded'
-                    });
-                }
                 res.json({
                     data,
                     context: meta.context,
@@ -184,7 +164,7 @@ var exprt = {
                     next: meta.next,
                     time: new Date(),
                     cache: meta.cache ? meta.cache : false,
-                    meta: imeta
+                    meta: req.softErrors
                 })
             };
             next();
@@ -226,7 +206,6 @@ var exprt = {
     },
     query_limit: () => {
         return (req, res, next)=> {
-            req.query_errors = req.query_errors || {};
             exprt.resolveAuth()(req, res, ()=> {
                 req.parsed_query = req.parsed_query || {};
                 req.parsed_query.limit = 25;
@@ -237,14 +216,22 @@ var exprt = {
                             if (req.token.type === 'system' || req.token.limit === 0)req.parsed_query.limit = l;
                             else if (req.token.query_limit > l) {
                                 req.parsed_query.limit = 100;
-                                req.query_errors.limit = req.token.query_limit;
+                                req.softErrors.push({
+                                    type: 'error',
+                                    msg: `Limit too high. Your requested object limit was too high and therefore set to your keys maximum of ${req.token.query_limit || 100}`,
+                                    error: 'query_limit_exceeded'
+                                });
                             }
                             else if (l < 1) req.parsed_query.limit = 1;
                             else req.parsed_query.limit = l;
                         } else {
                             if (l > 100) {
                                 req.parsed_query.limit = 100;
-                                req.query_errors.limit = 100;
+                                req.softErrors.push({
+                                    type: 'error',
+                                    msg: `Limit too high. Your requested object limit was too high and therefore set to your keys maximum of ${100}`,
+                                    error: 'query_limit_exceeded'
+                                });
                             }
                             else if (l < 1) req.parsed_query.limit = 1;
                             else req.parsed_query.limit = l;
@@ -277,6 +264,11 @@ var exprt = {
             exprt.query_limit()(req, res, function () {
                 exprt.query_offset()(req, res, next);
             });
+        }
+    },
+    ratelimit: ()=> {
+        return (req, res, next)=> {
+            //todo
         }
     },
     resolvePermissionGuild: (options)=> {
@@ -323,6 +315,22 @@ var exprt = {
                     });
                 }
             });
+        }
+    },
+    buildStructure: ()=> {
+        return (req, res, next)=> {
+            req.softErrors = [];
+            next();
+        }
+    },
+    hostnameDeprecation: ()=> {
+        return (req, res, next)=> {
+            if (req.hostname === 'foxbot.fuechschen.org')req.softErrors.push({
+                type: 'error',
+                msg: 'This API-Url is deprecated and is only supported for legacy clients. Use https://kitsune.fuechschen.org/api/v1 for all new clients.',
+                error: 'deprecated_url'
+            });
+            next();
         }
     }
 };

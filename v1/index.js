@@ -5,9 +5,11 @@ var middleware = require('./middleware');
 
 app.use(bodyparser.json());
 
+app.use(middleware.buildStructure());
 app.use(middleware.apijson());
 app.use(middleware.caching());
 app.use(middleware.cors());
+app.use(middleware.hostnameDeprecation());
 
 app.use('/', require('./routes/index'));
 app.use('/characters', require('./routes/characters'));
@@ -19,7 +21,7 @@ app.use('/stats', require('./routes/stats'));
 //legacy loads
 app.use('/vcsfeed', require('./routes/vcsfeed'));
 app.use('/github', require('./routes/github'));
-app.use('/gitlab',require('./routes/gitlab'));
+app.use('/gitlab', require('./routes/gitlab'));
 
 app.use(middleware.catcher());
 
