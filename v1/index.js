@@ -10,6 +10,7 @@ app.use(middleware.apijson());
 app.use(middleware.caching());
 app.use(middleware.cors());
 app.use(middleware.hostnameDeprecation());
+app.use(middleware.authMissingWarning());
 
 app.use('/', require('./routes/index'));
 app.use('/characters', require('./routes/characters'));

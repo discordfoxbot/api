@@ -149,7 +149,7 @@ var exprt = {
                 data: payload,
                 context: err.err_context || 'Error<ApiError>',
                 time: new Date(),
-               warnings: req.warnings
+                warnings: req.warnings
             });
         }
     },
@@ -164,7 +164,7 @@ var exprt = {
                     next: meta.next,
                     time: new Date(),
                     cache: meta.cache ? meta.cache : false,
-                   warnings: req.warnings
+                    warnings: req.warnings
                 })
             };
             next();
@@ -329,6 +329,16 @@ var exprt = {
                 type: 'error',
                 msg: 'This API-Url is deprecated and is only supported for legacy clients. Use https://kitsune.fuechschen.org/api/v1 for all new clients.',
                 error: 'deprecated_url'
+            });
+            next();
+        }
+    },
+    authMissingWarning: ()=> {
+        return (req, res, next)=> {
+            if (!req.get('Authorization'))req.warnings.push({
+                type: 'warning',
+                msg: 'You\'ve send this request without an Authorization token. While this still works, non-authorized request are subject to much stricter ratelimits.',
+                error: 'token_missing'
             });
             next();
         }
