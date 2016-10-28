@@ -1,0 +1,38 @@
+FORMAT: 1A
+HOST: http://kitsune.fuechschen.org/api/v1/
+
+# interface
+
+Polls is a simple API allowing consumers to view polls and vote in them.
+
+## Characters [/characters]
+
+Characters power commands like !waifu and !husbando. You can get a full list from these endpoints.
+
+### List All Characters [GET]
+
++ Response 200 (application/json)
+
+        {
+            "data": [
+                        {
+                            "id": "B1-5TxHHw",
+                            "name": "Hibari Kyouya",
+                             "source": "Katekyo Hitman Reborn!",
+                            "type": "husbando",
+                            "pictures": [
+                                "https://gg.fuechschen.space/SMOiuhmSE.jpeg"
+                            ]
+                        }
+                    ],
+            "context": "Array<Character>",
+            "count": 1,
+            "total": 1378,
+            "next": {
+                "offset": 1,
+                "link": "https://kitsune.fuechschen.org/api/v1/characters/?limit=1&offset=1"
+            },
+            "time": "2016-10-28T22:00:39.242Z",
+            "cache": false,
+            "warnings": []
+        }
