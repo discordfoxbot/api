@@ -5,6 +5,45 @@ var Promise = require('bluebird');
 var db = require('../../db');
 var middleware = require('../middleware');
 
+/**
+ * @apiDefine defaultResponse
+ * @apiSuccess {String} context A string giving the type of the data-field.
+ * @apiSuccess {String} time The current servertime.
+ * @apiSuccess {Object[]} warnings An array of objects containing errors, which didn't let the request fail.
+ * @apiSuccess {Boolean} cache indicates if the answer was delivered from cache
+ */
+
+/**
+ * @apiDefine paginate
+ * @apiParam {Number} [limit=100] Sets the limit of records returned.
+ * @apiParam {Number} [offset] Offset to paginate through the list.
+ * @apiSuccess {Number} [count] Giving the length of data if it's an array. Only present on paginated resources.
+ * @apiSuccess {Number} [total] Giving the total number of objects available. Only present on paginated resources.
+ * @apiSuccess {Object} [next] Giving some information for the next request on paginated resources. Only present on paginated resources.
+ * @apiSuccess {Number} [next.offset] Gives the next offset.
+ * @apiSuccess {Number} [next.link] Gives a link for the next page for paginated resources.
+ *
+ */
+
+/**
+ * @apiDefine optionalAuth
+ * @apiHeader {String} [Authorization] Token to authenticate against the API. Is only used to determine ratelimits for this endpoint.
+ */
+
+
+/**
+ * @api {get} /v1/characters Get all characters as list
+ * @apiName GetCharacters
+ * @apiGroup Characters
+ * @apiVersion 1.0.0
+ * @apiUse defaultResponse
+ * @apiUse paginate
+ * @apiUse optionalAuth
+ * @apiParam {String} [type] Specify the character type. Currently only 'waifu' or 'husbando'
+ * @apiDescription Gets all characters as a paginated list.
+ * @apiSuccess {Object[]} data Array containing character-objects
+ */
+
 app.get('/', middleware.query(), (req, res, next)=> {
     /** @namespace req.query.pic_verified */
     var where = undefined;
@@ -64,6 +103,23 @@ app.get('/', middleware.query(), (req, res, next)=> {
         story.warn('SQL-Error', '', {attach: err});
     });
 });
+
+/**
+ * @api {get} /v1/characters/:id Get a character
+ * @apiName GetCharacter
+ * @apiGroup Characters
+ * @apiVersion 1.0.0
+ * @apiUse defaultResponse
+ * @apiUse optionalAuth
+ * @apiParam {String} id The unique id of the character
+ * @apiDescription Gets information about on specific character.
+ * @apiSuccess {Object} data Object containing all the character-data.
+ * @apiSuccess {String} data.id The characters unique id.
+ * @apiSuccess {String} data.name The characters name.
+ * @apiSuccess {String} data.source The characters source (e.g. Anime, Book, etc.).
+ * @apiSuccess {String} data.type The characters type.
+ * @apiSuccess {String[]} data.pictures An array of picture-links.
+ */
 
 app.get('/:id', (req, res, next)=> {
     db.models.Character.find({where: {id: req.params.id}}).then((c)=> {
