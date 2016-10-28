@@ -22,7 +22,7 @@ app.post('/:id', (req, res)=> {
                     feed.update({
                         last_gh_event: req.get('X-GitHub-Delivery')
                     });
-                    if (['push', 'watch', 'pull_request'].includes(req.get('X-GitHub-Event'))) {
+                    if (['push', 'watch', 'pull_request', 'fork', 'issues', 'issue_comment'].includes(req.get('X-GitHub-Event'))) {
                         //noinspection JSUnresolvedFunction
                         feed.getChannel().then(channel=> {
                             db.sendEvent('githubUpdate', {
