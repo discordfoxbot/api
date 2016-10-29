@@ -33,7 +33,7 @@ var middleware = require('../middleware');
 
 
 /**
- * @api {get} /v1/stats Get current Stats
+ * @api {get} /v1.1/stats Get current Stats
  * @apiName GetStats
  * @apiGroup Stats
  * @apiVersion 1.1.0
@@ -94,7 +94,7 @@ app.get('/', (req, res, next)=> {
                     users: parseInt(cache.u),
                     guilds: parseInt(cache.g),
                     messages: parseInt(cache.m),
-                    cchannels: parseInt(cache.c)
+                    channels: parseInt(cache.c)
                 }, {context: 'Object<Stats>', cache: true});
             })
         }
@@ -105,7 +105,7 @@ app.get('/', (req, res, next)=> {
 });
 
 /**
- * @api {get} /v1/stats/uptime_test Endpoint for UptimeRobot to test the Api without consuming too much resources.
+ * @api {get} /v1.1/stats/uptime_test Endpoint for UptimeRobot to test the Api without consuming too much resources.
  * @apiName GetUptimeStatus
  * @apiGroup Stats
  * @apiVersion 1.1.0
