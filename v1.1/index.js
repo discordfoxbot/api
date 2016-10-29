@@ -12,7 +12,7 @@ app.use(middleware.cors());
 app.use(middleware.hostnameDeprecation());
 app.use(middleware.authMissingWarning());
 
-app.use('/', require('./routes/index'));
+app.use('/', require('./routes/'));
 app.use('/stats', require('./routes/stats'));
 
 app.use(middleware.catcher());
