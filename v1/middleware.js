@@ -342,6 +342,17 @@ var exprt = {
             });
             next();
         }
+    },
+    deprecate: (endpoint)=> {
+        return (req, res, next)=> {
+            req.warnings.push({
+                type: 'warning',
+                msg: `You are using a deprecated endpoint. Please use https://kitsune.fuechschen.org/api${endpoint} from now.`,
+                error: 'deprecated_endpoint',
+                link: `https://kitsune.fuechschen.org/api${endpoint}`
+            });
+            next();
+        }
     }
 };
 

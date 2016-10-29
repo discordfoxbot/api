@@ -47,7 +47,7 @@ var middleware = require('../middleware');
  * @apiSuccess {Number} data.c Channels Kitsune can see.
  */
 
-app.get('/', (req, res, next)=> {
+app.get('/', middleware.deprecate('/v1.1/stats'), (req, res, next)=> {
     db.redis.exists('statscache').then(ex=> {
         if (ex === 0) {
             //noinspection JSUnresolvedFunction
@@ -115,7 +115,7 @@ app.get('/', (req, res, next)=> {
  * @apiSuccess {Boolean} data True if up. Can also be false if in maintenance.
  */
 
-app.get('/uptime_test', (req, res)=> {
+app.get('/uptime_test', middleware.deprecate('/v1.1/stats/uptime_test'), (req, res)=> {
     res.apijson(true, {context: 'Boolean<Status>'});
 });
 
