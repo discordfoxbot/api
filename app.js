@@ -44,9 +44,10 @@ app.use((req, res, next)=> {
 });
 
 app.use('/api/v1', require('./v1/index'));
+app.use('api/v1.1', require('./v1.1/index'));
 
 app.use((req, res)=> {
-    res.status(404).json({msg: 'Choose API-Version', version: {1: '/api/v1'}});
+    res.status(404).json({msg: 'Choose API-Version', version: {1: '/api/v1', '1.1': '/api/v1.1'}});
 });
 
 app.listen(4298);

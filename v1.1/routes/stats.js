@@ -36,15 +36,15 @@ var middleware = require('../middleware');
  * @api {get} /v1/stats Get current Stats
  * @apiName GetStats
  * @apiGroup Stats
- * @apiVersion 1.0.0
+ * @apiVersion 1.1.0
  * @apiUse defaultResponse
  * @apiUse optionalAuth
  * @apiDescription Returns current stats of Kitsune.
  * @apiSuccess {Object} data Object containing the stats.
- * @apiSuccess {Number} data.u Users Kitsune can see.
- * @apiSuccess {Number} data.g Guilds Kitsune is active in.
- * @apiSuccess {Number} data.m Messages Kitsune handles per second.
- * @apiSuccess {Number} data.c Channels Kitsune can see.
+ * @apiSuccess {Number} data.users Users Kitsune can see.
+ * @apiSuccess {Number} data.guilds Guilds Kitsune is active in.
+ * @apiSuccess {Number} data.messages Messages Kitsune handles per second.
+ * @apiSuccess {Number} data.channels Channels Kitsune can see.
  */
 
 app.get('/', (req, res, next)=> {
@@ -74,14 +74,14 @@ app.get('/', (req, res, next)=> {
                     }
                     return Promise.resolve(c);
                 })
-            ]).spread((g, u, m, c)=> {
-                res.apijson({u, g, m, c}, {context: 'Object<Stats>', cache: false});
+            ]).spread((guilds, users, messages, channels)=> {
+                res.apijson({users, guilds, messages, channels}, {context: 'Object<Stats>', cache: false});
                 //noinspection JSUnresolvedFunction
                 return Promise.all([
-                    db.redis.hset('statscache', 'g', g),
-                    db.redis.hset('statscache', 'u', u),
-                    db.redis.hset('statscache', 'm', m),
-                    db.redis.hset('statscache', 'c', c),
+                    db.redis.hset('statscache', 'g', guilds),
+                    db.redis.hset('statscache', 'u', users),
+                    db.redis.hset('statscache', 'm', messages),
+                    db.redis.hset('statscache', 'c', channels),
                 ]).then(()=> {
                     //noinspection JSUnresolvedFunction
                     return db.redis.expire('statscache', 1800);
@@ -91,10 +91,10 @@ app.get('/', (req, res, next)=> {
             //noinspection JSUnresolvedFunction
             return db.redis.hgetall('statscache').then(cache=> {
                 res.apijson({
-                    u: parseInt(cache.u),
-                    g: parseInt(cache.g),
-                    m: parseInt(cache.m),
-                    c: parseInt(cache.c)
+                    users: parseInt(cache.u),
+                    guilds: parseInt(cache.g),
+                    messages: parseInt(cache.m),
+                    cchannels: parseInt(cache.c)
                 }, {context: 'Object<Stats>', cache: true});
             })
         }
@@ -108,7 +108,7 @@ app.get('/', (req, res, next)=> {
  * @api {get} /v1/stats/uptime_test Endpoint for UptimeRobot to test the Api without consuming too much resources.
  * @apiName GetUptimeStatus
  * @apiGroup Stats
- * @apiVersion 1.0.0
+ * @apiVersion 1.1.0
  * @apiUse defaultResponse
  * @apiUse optionalAuth
  * @apiDescription Returns the current uptime status of the api.

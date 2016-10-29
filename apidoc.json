@@ -1,8 +1,8 @@
 {
-  "version":"1.0.0",
-  "name":"Kitsune API",
-  "url":"https://kitsune.fuechschen.org/api",
-  "order":[
+  "version": "1.0.0",
+  "name": "Kitsune API",
+  "url": "https://kitsune.fuechschen.org/api",
+  "order": [
     "Index",
     "Characters"
   ]

@@ -30,7 +30,7 @@ var app = require('express').Router();
  * @api {get} /v1/
  * @apiName Index
  * @apiGroup Index
- * @apiVersion 1.0.0
+ * @apiVersion 1.1.0
  * @apiUse optionalAuth
  * @apiDescription Returns a list of all major routes.
  * @apiSuccess {Object} data Object containing all the routes.
@@ -40,14 +40,10 @@ var app = require('express').Router();
 
 app.get('/', (req, res)=> {
     res.apijson({
-        msg:'Welcome to Kitsune-Api V1.',
-        endpoints:{
-            characters:'https://kitsune.fuechschen.org/api/v1/characters',
-            chatlogs:'https://kitsune.fuechschen.org/api/v1/chatlogs',
-            guilds:'https://kitsune.fuechschen.org/api/v1/guilds',
-            stats:'https://kitsune.fuechschen.org/api/v1/stats',
-            uptime_test:'https://kitsune.fuechschen.org/api/v1/stats/uptime_test',
-            vcsfeeds:'https://kitsune.fuechschen.org/api/v1/vcsfeeds'
+        msg: 'Welcome to Kitsune-Api V1.1.',
+        endpoints: {
+            stats: 'https://kitsune.fuechschen.org/api/v1/stats',
+            uptime_test: 'https://kitsune.fuechschen.org/api/v1/stats/uptime_test',
         }
     })
 });

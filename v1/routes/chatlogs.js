@@ -20,7 +20,6 @@ var middleware = require('../middleware');
 
 
 /**
- * @apiIgnore
  * @api {get} /v1/chatlogs/:id Get a chatlog
  * @apiName GetChatlog
  * @apiGroup Chatlogs
@@ -29,12 +28,30 @@ var middleware = require('../middleware');
  * @apiUse optionalAuth
  * @apiParam {String} id The unique id of the chatlog.
  * @apiDescription Gets information about on specific character.
- * @apiSuccess {Object} data Object containing all the character-data.
- * @apiSuccess {String} data.id The characters unique id.
- * @apiSuccess {String} data.name The characters name.
- * @apiSuccess {String} data.source The characters source (e.g. Anime, Book, etc.).
- * @apiSuccess {String} data.type The characters type.
- * @apiSuccess {String[]} data.pictures An array of picture-links.
+ * @apiSuccess {Object} data Object containing all the data.
+ * @apiSuccess {String} data.id The chatlogs unique id.
+ * @apiSuccess {String} data.time The time the chatlog was created.
+ * @apiSuccess {Object} data.guild The guild the chatlog was created in.
+ * @apiSuccess {String} data.guild.id The guilds id.
+ * @apiSuccess {String} data.guild.name The guilds name.
+ * @apiSuccess {Object} data.channel The channel the chatlog was created in.
+ * @apiSuccess {String} data.channel.id The channels id.
+ * @apiSuccess {String} data.channel.name The channels name.
+ * @apiSuccess {Object} data.user The user who created the chatlog.
+ * @apiSuccess {String} data.user.id The users id.
+ * @apiSuccess {String} data.user.username The users name.
+ * @apiSuccess {String} data.user.discriminator The users discriminator
+ * @apiSuccess {Object[]} data.messages The messageas included in the chatlog.
+ * @apiSuccess {String} data.messages.id The message id.
+ * @apiSuccess {String} data.messages.content The message content.
+ * @apiSuccess {String} data.messages.create_content The message content at it's creation.
+ * @apiSuccess {Boolean} data.messages.edited Indicates if the message was edited.
+ * @apiSuccess {Boolean} data.messages.deleted Indicates if the message was deleted.
+ * @apiSuccess {Number} data.messages.timestamp Discord Timestamp of the message.
+ * @apiSuccess {Object} data.messages.user The user who sent the message.
+ * @apiSuccess {String} data.messages.user.id The users id.
+ * @apiSuccess {String} data.messages.user.username The users name.
+ * @apiSuccess {String} data.messages.user.discriminator The users discriminator
  */
 
 app.get('/:id', (req, res, next)=> {
