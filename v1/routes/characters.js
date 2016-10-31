@@ -2,7 +2,7 @@ var app = require('express').Router();
 var story = require('storyboard').mainStory;
 var Promise = require('bluebird');
 
-var db = require('../../db');
+var db = require('../../lib/db');
 var middleware = require('../middleware');
 
 /**

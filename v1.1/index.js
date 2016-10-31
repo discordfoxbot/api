@@ -11,6 +11,7 @@ app.use(middleware.caching());
 app.use(middleware.cors());
 app.use(middleware.hostnameDeprecation());
 app.use(middleware.authMissingWarning());
+app.use(middleware.ratelimit());
 
 app.use('/', require('./routes/'));
 app.use('/stats', require('./routes/stats'));

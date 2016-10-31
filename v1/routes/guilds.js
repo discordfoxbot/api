@@ -2,7 +2,7 @@ var app = require('express').Router();
 var Promise = require('bluebird');
 var story = require('storyboard').mainStory;
 
-var db = require('../../db');
+var db = require('../../lib/db');
 var middleware = require('../middleware');
 
 app.get('/', middleware.auth(), (req, res, next)=> {

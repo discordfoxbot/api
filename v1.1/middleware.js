@@ -1,7 +1,8 @@
 var story = require('storyboard').mainStory;
 
-var db = require('../db');
-var rolePerms = require('../rolePermissions');
+var db = require('../lib/db');
+var rolePerms = require('../lib/rolePermissions');
+var limiter = require('../lib/rateLimiter');
 
 var exprt = {
     auth: ()=> {
@@ -97,8 +98,9 @@ var exprt = {
                     break;
                 case 429:
                     payload = {
-                        message: `You've exceeded the ratelimit for this key. Any further request will lead to blacklisting your ip for up to 48 hours.`,
-                        error: 'rate_limit_exceeded'
+                        message: `You've exceeded the ratelimit for this key. You will have to wait ${err.wait} ms before you make any further request. Any further request will lead to blacklisting your ip for up to 48 hours.`,
+                        error: 'rate_limit_exceeded',
+                        wait: err.wait
                     };
                     break;
                 case 4006:
@@ -268,7 +270,16 @@ var exprt = {
     },
     ratelimit: ()=> {
         return (req, res, next)=> {
-            //todo
+            if (req.get('Authorization')) limiter.token(req.get('Authorization'), (err, left)=> {
+                if (err)next({code: 5200});
+                else if (left)next({code: 429, wait: left});
+                else next();
+            });
+            else limiter.ip(req.ip, (err, left)=> {
+                if (err)next({code: 5200});
+                else if (left)next({code: 429, wait: left});
+                else next();
+            })
         }
     },
     resolvePermissionGuild: (options)=> {

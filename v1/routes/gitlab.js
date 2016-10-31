@@ -1,6 +1,6 @@
 var app = require('express').Router();
 
-var db = require('../../db');
+var db = require('../../lib/db');
 var middleware = require('../middleware');
 
 app.head('/:id', middleware.cors(['__none__']), (req, res)=> {

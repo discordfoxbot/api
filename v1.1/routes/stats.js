@@ -3,7 +3,7 @@ var Promise = require('bluebird');
 var moment = require('moment');
 var story = require('storyboard').mainStory;
 
-var db = require('../../db');
+var db = require('../../lib/db');
 var middleware = require('../middleware');
 
 /**

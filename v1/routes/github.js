@@ -1,6 +1,6 @@
 var app = require('express').Router();
 
-var db = require('../../db');
+var db = require('../../lib/db');
 
 var middleware = require('../middleware');
 
