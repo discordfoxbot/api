@@ -353,6 +353,14 @@ var exprt = {
             });
             next();
         }
+    },
+    resolveToken: ()=> {
+        return (req, res, next)=> {
+            if (req.get('Authorization'))req.auth_token = req.get('Authorization');
+            else if (req.query.auth_token && typeof req.query.auth_token === 'string')req.auth_token = req.query.auth_token;
+            else req.auth_token = null;
+            next();
+        }
     }
 };
 

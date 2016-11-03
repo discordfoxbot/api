@@ -7,8 +7,8 @@ var limiter = require('../lib/rateLimiter');
 var exprt = {
     auth: ()=> {
         return (req, res, next)=> {
-            if (req.get('authorization') !== undefined) {
-                db.models.Token.find({where: {token: req.get('authorization')}}).then(token=> {
+            if (req.auth_token !== undefined) {
+                db.models.Token.find({where: {token: req.auth_token}}).then(token=> {
                     if (token !== null && token !== undefined) {
                         req.token = token;
                         if (token.type === 'system') {
@@ -32,8 +32,8 @@ var exprt = {
     },
     resolveAuth: ()=> {
         return (req, res, next)=> {
-            if (req.get('authorization') !== undefined) {
-                db.models.Token.find({where: {token: req.get('authorization')}}).then(token=> {
+            if (req.auth_token !== undefined) {
+                db.models.Token.find({where: {token: req.auth_token}}).then(token=> {
                     if (token !== null && token !== undefined) {
                         req.token = token;
                         if (token.type === 'system') {
@@ -155,8 +155,10 @@ var exprt = {
             });
         }
     },
-    apijson: ()=> {
+    apijson: (options = {caching: false, auth_caching: true, cache_time: 600})=> {
         return (req, res, next)=> {
+            if (options.caching) var cache_key = `${req.method}-${req.originalUrl}-${options.auth_caching ? req.auth_token : ''}`;
+
             res.apijson = (data, meta = {})=> {
                 res.json({
                     data,
@@ -167,7 +169,16 @@ var exprt = {
                     time: new Date(),
                     cache: meta.cache ? meta.cache : false,
                     warnings: req.warnings
-                })
+                });
+
+                if (options.caching) {
+                    db.redis.multi().hset(cache_key, 'data', JSON.stringify(data))
+                        .hset(cache_key, 'context', meta.context)
+                        .hset(cache_key, 'next', JSON.stringify(meta.next) || 'undef')
+                        .hset(cache_key, 'total', meta.total || 'undef')
+                        .hset(cache_key, 'cache', meta.cache, meta.cache ? meta.cache : false)
+                        .exec();
+                }
             };
             next();
         }
@@ -270,16 +281,11 @@ var exprt = {
     },
     ratelimit: ()=> {
         return (req, res, next)=> {
-            if (req.get('Authorization')) limiter.token(req.get('Authorization'), (err, left)=> {
-                if (err)next({code: 5200});
-                else if (left)next({code: 429, wait: left});
-                else next();
+            limiter[req.auth_token ? `token` : `ip`](req.auth_token ? req.auth_token : req.ip, (err, wait)=> {
+                if (err)return next({code: 5200});
+                if (wait)return next({code: 429, wait});
+                return next()
             });
-            else limiter.ip(req.ip, (err, left)=> {
-                if (err)next({code: 5200});
-                else if (left)next({code: 429, wait: left});
-                else next();
-            })
         }
     },
     resolvePermissionGuild: (options)=> {
@@ -346,7 +352,7 @@ var exprt = {
     },
     authMissingWarning: ()=> {
         return (req, res, next)=> {
-            if (!req.get('Authorization'))req.warnings.push({
+            if (!req.auth_token)req.warnings.push({
                 type: 'warning',
                 msg: 'You\'ve send this request without an Authorization token. While this still works, non-authorized request are subject to much stricter ratelimits.',
                 error: 'token_missing'
@@ -362,6 +368,14 @@ var exprt = {
                 error: 'deprecated_endpoint',
                 link: `https://kitsune.fuechschen.org/api${endpoint}`
             });
+            next();
+        }
+    },
+    resolveToken: ()=> {
+        return (req, res, next)=> {
+            if (req.get('Authorization'))req.auth_token = req.get('Authorization');
+            else if (req.query.auth_token && typeof req.query.auth_token === 'string')req.auth_token = req.query.auth_token;
+            else req.auth_token = null;
             next();
         }
     }

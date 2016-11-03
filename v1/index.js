@@ -7,6 +7,7 @@ app.use(bodyparser.json());
 
 app.use(middleware.buildStructure());
 app.use(middleware.apijson());
+app.use(middleware.resolveToken());
 app.use(middleware.caching());
 app.use(middleware.cors());
 app.use(middleware.hostnameDeprecation());

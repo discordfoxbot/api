@@ -4,6 +4,8 @@
   "url": "https://kitsune.fuechschen.org/api",
   "order": [
     "Index",
-    "Characters"
+    "Characters",
+    "Chatlogs",
+    "Stats"
   ]
 }

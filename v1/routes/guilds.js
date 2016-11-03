@@ -5,6 +5,10 @@ var story = require('storyboard').mainStory;
 var db = require('../../lib/db');
 var middleware = require('../middleware');
 
+/**
+ *
+ */
+
 app.get('/', middleware.auth(), (req, res, next)=> {
     req.token.getGuilds().then(guilds=> {
         //noinspection JSUnresolvedFunction
