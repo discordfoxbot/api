@@ -6,6 +6,7 @@ var app = require('express').Router();
  * @apiSuccess {String} time The current servertime.
  * @apiSuccess {Object[]} warnings An array of objects containing errors, which didn't let the request fail.
  * @apiSuccess {Boolean} cache indicates if the answer was delivered from cache
+ * @apiSuccess {Number} cache_expire indicates when the apicache will expire in seconds (only present if cache is true). If you want new data, do not make a new request before this period has passed
  */
 
 /**
@@ -27,7 +28,7 @@ var app = require('express').Router();
 
 
 /**
- * @api {get} /v1/
+ * @api {get} /v1.1/
  * @apiName Index
  * @apiGroup Index
  * @apiVersion 1.1.0

@@ -66,17 +66,13 @@ var exprt = {
             var payload;
             switch (err.code) {
                 case 301 || 302:
-                    if (req.method === 'GET') {
-                        res.status(err.code).redirect(err.location);
-                    } else {
-                        err.code = 400;
-                        payload = {
-                            message: 'The requested resource is ot available under this uri. Please use the uri specified in the location variable',
-                            error: 'location_invalid',
-                            location: err.location
-                        };
-                        err.err_context = 'Error<ApiLocationError>'
-                    }
+                    err.code = 400;
+                    payload = {
+                        message: 'The requested resource is ot available under this uri. Please use the uri specified in the location variable',
+                        error: 'location_invalid',
+                        location: err.location
+                    };
+                    err.err_context = 'Error<ApiLocationError>';
                     break;
                 case 401:
                     payload = {
@@ -102,6 +98,7 @@ var exprt = {
                         error: 'rate_limit_exceeded',
                         wait: err.wait
                     };
+                    err.err_context = 'Error<ApiRatelimitError>';
                     break;
                 case 4006:
                     err.code = 400;
@@ -157,30 +154,53 @@ var exprt = {
     },
     apijson: (options = {caching: false, auth_caching: true, cache_time: 600})=> {
         return (req, res, next)=> {
-            if (options.caching) var cache_key = `${req.method}-${req.originalUrl}-${options.auth_caching ? req.auth_token : ''}`;
-
-            res.apijson = (data, meta = {})=> {
-                res.json({
-                    data,
-                    context: meta.context,
-                    count: (Array.isArray(data) ? data.length : undefined),
-                    total: meta.total,
-                    next: meta.next,
-                    time: new Date(),
-                    cache: meta.cache ? meta.cache : false,
-                    warnings: req.warnings
+            console.log(require('url').parse(req.originalUrl, true));
+            if (options.caching) {
+                var cache_key = `${req.method}-${req.hostname}-${req.originalUrl}-${options.auth_caching ? req.auth_token : ''}`;
+                db.redis.exists(cache_key).then((e)=> {
+                    if (e) return Promise.join(db.redis.hgetall(cache_key), db.redis.ttl(cache_key), (cache, ttl)=> {
+                        return res.json({
+                            data: JSON.parse(cache.data),
+                            context: cache.context,
+                            total: cache.total !== 'undef' ? cache.total : undefined,
+                            next: cache.next !== 'undef' ? JSON.parse(cache.next) : undefined,
+                            time: new Date(),
+                            cache: true,
+                            cache_expire: ttl,
+                            warnings: JSON.parse(cache.warnings)
+                        });
+                    });
+                    else return apply();
+                }).catch(()=> {
+                    options.caching = false;
+                    apply()
                 });
+            } else return apply();
 
-                if (options.caching) {
-                    db.redis.multi().hset(cache_key, 'data', JSON.stringify(data))
+            function apply() {
+                res.apijson = (data, meta = {})=> {
+                    res.json({
+                        data,
+                        context: meta.context,
+                        count: (Array.isArray(data) ? data.length : undefined),
+                        total: meta.total,
+                        next: meta.next,
+                        time: new Date(),
+                        cache: meta.cache ? meta.cache : false,
+                        cache_expire: meta.cache_expire,
+                        warnings: req.warnings
+                    });
+
+                    if (options.caching) db.redis.multi().hset(cache_key, 'data', JSON.stringify(data))
                         .hset(cache_key, 'context', meta.context)
                         .hset(cache_key, 'next', JSON.stringify(meta.next) || 'undef')
                         .hset(cache_key, 'total', meta.total || 'undef')
-                        .hset(cache_key, 'cache', meta.cache, meta.cache ? meta.cache : false)
+                        .hset(cache_key, 'warnings', JSON.stringify(req.warnings))
+                        .expire(cache_key, options.cache_time)
                         .exec();
-                }
-            };
-            next();
+                };
+                next();
+            }
         }
     },
     caching: ()=> {

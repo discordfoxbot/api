@@ -1,5 +1,7 @@
 var app = require('express').Router();
 
+var middleware = require('../middleware');
+
 /**
  * @apiDefine defaultResponse
  * @apiSuccess {String} context A string giving the type of the data-field.
@@ -25,7 +27,6 @@ var app = require('express').Router();
  * @apiHeader {String} [Authorization] Token to authenticate against the API. Is only used to determine ratelimits for this endpoint.
  */
 
-
 /**
  * @api {get} /v1/
  * @apiName Index
@@ -40,14 +41,14 @@ var app = require('express').Router();
 
 app.get('/', (req, res)=> {
     res.apijson({
-        msg:'Welcome to Kitsune-Api V1.',
-        endpoints:{
-            characters:'https://kitsune.fuechschen.org/api/v1/characters',
-            chatlogs:'https://kitsune.fuechschen.org/api/v1/chatlogs',
-            guilds:'https://kitsune.fuechschen.org/api/v1/guilds',
-            stats:'https://kitsune.fuechschen.org/api/v1/stats',
-            uptime_test:'https://kitsune.fuechschen.org/api/v1/stats/uptime_test',
-            vcsfeeds:'https://kitsune.fuechschen.org/api/v1/vcsfeeds'
+        msg: 'Welcome to Kitsune-Api V1.',
+        endpoints: {
+            characters: 'https://kitsune.fuechschen.org/api/v1/characters',
+            chatlogs: 'https://kitsune.fuechschen.org/api/v1/chatlogs',
+            guilds: 'https://kitsune.fuechschen.org/api/v1/guilds',
+            stats: 'https://kitsune.fuechschen.org/api/v1/stats',
+            uptime_test: 'https://kitsune.fuechschen.org/api/v1/stats/uptime_test',
+            vcsfeeds: 'https://kitsune.fuechschen.org/api/v1/vcsfeeds'
         }
     })
 });

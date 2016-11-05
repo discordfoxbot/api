@@ -12,6 +12,7 @@ var middleware = require('../middleware');
  * @apiSuccess {String} time The current servertime.
  * @apiSuccess {Object[]} warnings An array of objects containing errors, which didn't let the request fail.
  * @apiSuccess {Boolean} cache indicates if the answer was delivered from cache
+ * @apiSuccess {Number} cache_expire indicates when the apicache will expire in seconds (only present if cache is true). If you want new data, do not make a new request before this period has passed
  */
 
 /**

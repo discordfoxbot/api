@@ -155,21 +155,54 @@ var exprt = {
             });
         }
     },
-    apijson: ()=> {
+    apijson: (options = {caching: false, auth_caching: true, cache_time: 600})=> {
         return (req, res, next)=> {
-            res.apijson = (data, meta = {})=> {
-                res.json({
-                    data,
-                    context: meta.context,
-                    count: (Array.isArray(data) ? data.length : undefined),
-                    total: meta.total,
-                    next: meta.next,
-                    time: new Date(),
-                    cache: meta.cache ? meta.cache : false,
-                    warnings: req.warnings
-                })
-            };
-            next();
+            if (options.caching) {
+                var cache_key = `${req.method}-${req.hostname}-${req.originalUrl}-${options.auth_caching ? req.auth_token : ''}`;
+                db.redis.exists(cache_key).then((e)=> {
+                    if (e) return Promise.join(db.redis.hgetall(cache_key), db.redis.ttl(cache_key), (cache, ttl)=> {
+                        return res.json({
+                            data: JSON.parse(cache.data),
+                            context: cache.context,
+                            total: cache.total !== 'undef' ? cache.total : undefined,
+                            next: cache.next !== 'undef' ? JSON.parse(cache.next) : undefined,
+                            time: new Date(),
+                            cache: true,
+                            cache_expire: ttl,
+                            warnings: JSON.parse(cache.warnings)
+                        });
+                    });
+                    else return apply();
+                }).catch(()=> {
+                    options.caching = false;
+                    apply()
+                });
+            } else return apply();
+
+            function apply() {
+                res.apijson = (data, meta = {})=> {
+                    res.json({
+                        data,
+                        context: meta.context,
+                        count: (Array.isArray(data) ? data.length : undefined),
+                        total: meta.total,
+                        next: meta.next,
+                        time: new Date(),
+                        cache: meta.cache ? meta.cache : false,
+                        cache_expire: meta.cache_expire,
+                        warnings: req.warnings
+                    });
+
+                    if (options.caching) db.redis.multi().hset(cache_key, 'data', JSON.stringify(data))
+                        .hset(cache_key, 'context', meta.context)
+                        .hset(cache_key, 'next', JSON.stringify(meta.next) || 'undef')
+                        .hset(cache_key, 'total', meta.total || 'undef')
+                        .hset(cache_key, 'warnings', JSON.stringify(req.warnings))
+                        .expire(cache_key, options.cache_time)
+                        .exec();
+                };
+                next();
+            }
         }
     },
     caching: ()=> {
