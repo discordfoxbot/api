@@ -154,7 +154,6 @@ var exprt = {
     },
     apijson: (options = {caching: false, auth_caching: true, cache_time: 600})=> {
         return (req, res, next)=> {
-            console.log(require('url').parse(req.originalUrl, true));
             if (options.caching) {
                 var cache_key = `${req.method}-${req.hostname}-${req.originalUrl}-${options.auth_caching ? req.auth_token : ''}`;
                 db.redis.exists(cache_key).then((e)=> {
