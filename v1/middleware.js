@@ -2,7 +2,7 @@ var story = require('storyboard').mainStory;
 
 var db = require('../lib/db');
 var rolePerms = require('../lib/rolePermissions');
-var limiter = require('../lib/rateLimiter');
+var limiter = require('../lib/Ratelimits');
 
 var exprt = {
     auth: ()=> {
