@@ -63,6 +63,7 @@ app.get('/', middleware.query(), (req, res, next)=> {
         order: [['id', 'ASC']]
     }).then((result)=> {
         return Promise.all(result.rows.map((character)=> {
+            if (character.type === 'generic')return [];
             var q = {verified: true};
             if (req.query.pic_verified !== undefined) {
                 if (['true', 'false'].indexOf(req.query.pic_verified)) { //noinspection JSValidateTypes
@@ -73,13 +74,18 @@ app.get('/', middleware.query(), (req, res, next)=> {
             //noinspection JSUnresolvedFunction
             return character.getCharacterPictures({where: q});
         })).then((pictures)=> {
+            if (result.rows.find(row=>row.type === 'generic'))req.warnings.push({
+                type: 'warning',
+                msg: 'Pictures won\'t be displayed on generic characters as they are just for internal use.',
+                error: 'generic_no_pictures'
+            });
             res.apijson(result.rows.map((row)=> {
                 return {
                     id: row.id,
                     name: row.name,
                     source: row.source,
                     type: row.type,
-                    pictures: pictures[result.rows.indexOf(row)].map((picture)=> {
+                    pictures: row.type === 'generic' ? [] : pictures[result.rows.indexOf(row)].map((picture)=> {
                         return picture.link
                     })
                 };
@@ -122,7 +128,7 @@ app.get('/', middleware.query(), (req, res, next)=> {
  * @apiSuccess {String[]} data.pictures An array of picture-links.
  */
 
-app.get('/:id', (req, res, next)=> {
+app.get('/:id', middleware.resolveAuth(), (req, res, next)=> {
     db.models.Character.find({where: {id: req.params.id}}).then((c)=> {
         var q = {verified: true};
         if (req.query.pic_verified !== undefined) {
@@ -132,7 +138,15 @@ app.get('/:id', (req, res, next)=> {
         }
         //noinspection JSUnresolvedFunction
         return c.getCharacterPictures({where: q}).then((pics)=> {
-            res.apijson([{
+            if (c.type === 'generic') {
+                req.warnings.push({
+                    type: 'warning',
+                    msg: 'Pictures won\'t be displayed on generic characters as they are just for internal use.',
+                    error: 'generic_no_pictures'
+                });
+                pics = [];
+            }
+            res.apijson({
                     id: c.id,
                     name: c.name,
                     source: c.source,
@@ -140,7 +154,7 @@ app.get('/:id', (req, res, next)=> {
                     pictures: pics.map((p)=> {
                         return p.link
                     })
-                }],
+                },
                 {count: 1, total: 1, context: 'Object<Character>'});
         });
     }).catch((err)=> {
