@@ -5,14 +5,14 @@ var rolePerms = require('../lib/rolePermissions');
 var limiter = require('../lib/Ratelimits');
 
 var exprt = {
-    auth: ()=> {
-        return (req, res, next)=> {
+    auth: () => {
+        return (req, res, next) => {
             if (req.auth_token !== undefined) {
-                db.models.Token.find({where: {token: req.auth_token}}).then(token=> {
+                db.models.Token.find({where: {token: req.auth_token}}).then(token => {
                     if (token !== null && token !== undefined) {
                         req.token = token;
                         if (token.type === 'system') {
-                            token.getGuilds = (query = {where: {online: true}})=> {
+                            token.getGuilds = (query = {where: {online: true}}) => {
                                 //noinspection JSUnresolvedFunction
                                 return db.models.Guild.findAll(query);
                             };
@@ -23,21 +23,21 @@ var exprt = {
                             //return null;
                         }
                     } else next({code: 401});
-                }).catch(err=> {
+                }).catch(err => {
                     next({code: 5200});
                     story.error('sql', 'auth', {attach: err});
                 })
             } else next({code: 401});
         }
     },
-    resolveAuth: ()=> {
-        return (req, res, next)=> {
+    resolveAuth: () => {
+        return (req, res, next) => {
             if (req.auth_token !== undefined) {
-                db.models.Token.find({where: {token: req.auth_token}}).then(token=> {
+                db.models.Token.find({where: {token: req.auth_token}}).then(token => {
                     if (token !== null && token !== undefined) {
                         req.token = token;
                         if (token.type === 'system') {
-                            token.getGuilds = (query = {where: {online: true}})=> {
+                            token.getGuilds = (query = {where: {online: true}}) => {
                                 //noinspection JSUnresolvedFunction
                                 return db.models.Guild.findAll(query);
                             };
@@ -48,21 +48,21 @@ var exprt = {
                             //return null;
                         }
                     } else next();
-                }).catch(err=> {
+                }).catch(err => {
                     next();
                     story.error('sql', 'auth', {attach: err});
                 })
             } else next();
         }
     },
-    catcher: ()=> {
-        return (req, res, next)=> {
+    catcher: () => {
+        return (req, res, next) => {
             next({code: 4404})
         }
     },
-    error: ()=> {
+    error: () => {
         //noinspection JSUnusedLocalSymbols
-        return (err, req, res, next)=> {
+        return (err, req, res, next) => {
             var payload;
             switch (err.code) {
                 case 301 || 302:
@@ -152,12 +152,12 @@ var exprt = {
             });
         }
     },
-    apijson: (options = {caching: false, auth_caching: true, cache_time: 600})=> {
-        return (req, res, next)=> {
+    apijson: (options = {caching: false, auth_caching: true, cache_time: 600}) => {
+        return (req, res, next) => {
             if (options.caching) {
                 var cache_key = `${req.method}-${req.hostname}-${req.originalUrl}-${options.auth_caching ? req.auth_token : ''}`;
-                db.redis.exists(cache_key).then((e)=> {
-                    if (e) return Promise.join(db.redis.hgetall(cache_key), db.redis.ttl(cache_key), (cache, ttl)=> {
+                db.redis.exists(cache_key).then((e) => {
+                    if (e) return Promise.join(db.redis.hgetall(cache_key), db.redis.ttl(cache_key), (cache, ttl) => {
                         return res.json({
                             data: JSON.parse(cache.data),
                             context: cache.context,
@@ -170,14 +170,14 @@ var exprt = {
                         });
                     });
                     else return apply();
-                }).catch(()=> {
+                }).catch(() => {
                     options.caching = false;
                     apply()
                 });
             } else return apply();
 
             function apply() {
-                res.apijson = (data, meta = {})=> {
+                res.apijson = (data, meta = {}) => {
                     res.json({
                         data,
                         context: meta.context,
@@ -187,6 +187,7 @@ var exprt = {
                         time: new Date(),
                         cache: meta.cache ? meta.cache : false,
                         cache_expire: meta.cache_expire,
+                        ratelimit_left: req.requestsLeft,
                         warnings: req.warnings
                     });
 
@@ -202,25 +203,25 @@ var exprt = {
             }
         }
     },
-    caching: ()=> {
-        return (req, res, next)=> {
+    caching: () => {
+        return (req, res, next) => {
             res.set({'Cache-Control': 'no-cache, no-store, must-revalidate', expires: new Date()});
             next();
         }
     },
-    cors: (allowed_orgins)=> {
-        return (req, res, next)=> {
+    cors: (allowed_orgins) => {
+        return (req, res, next) => {
             res.set({
                 'access-control-allow-credentials': true,
                 'access-control-allow-methods': 'POST, GET, PUT, PATCH, DELETE',
                 'access-control-allow-headers': 'Content-Type, Authorization'
             });
             if (!allowed_orgins || allowed_orgins.length === 0) {
-                if (req.get('origin'))res.set('access-control-allow-origin', req.get('origin'));
+                if (req.get('origin')) res.set('access-control-allow-origin', req.get('origin'));
                 else res.set('access-control-allow-origin', '*');
                 next();
             } else {
-                if (!req.get('origin'))next({code: 4006});
+                if (!req.get('origin')) next({code: 4006});
                 else if (allowed_orgins.includes(req.get('origin'))) {
                     res.set('access-control-allow-origin', req.get('origin'));
                     next();
@@ -228,24 +229,24 @@ var exprt = {
             }
         }
     },
-    head: ()=> {
-        return (req, res, next)=> {
-            exprt.cors(req, res, (err)=> {
-                if (err)next(err);
+    head: () => {
+        return (req, res, next) => {
+            exprt.cors(req, res, (err) => {
+                if (err) next(err);
                 else res.status(200).end();
             })
         }
     },
     query_limit: () => {
-        return (req, res, next)=> {
-            exprt.resolveAuth()(req, res, ()=> {
+        return (req, res, next) => {
+            exprt.resolveAuth()(req, res, () => {
                 req.parsed_query = req.parsed_query || {};
                 req.parsed_query.limit = 25;
                 if (req.query.limit !== undefined) {
                     var l = parseInt(req.query.limit);
                     if (!isNaN(l)) {
                         if (req.token) {
-                            if (req.token.type === 'system' || req.token.limit === 0)req.parsed_query.limit = l;
+                            if (req.token.type === 'system' || req.token.limit === 0) req.parsed_query.limit = l;
                             else if (req.token.query_limit > l) {
                                 req.parsed_query.limit = 100;
                                 req.warnings.push({
@@ -277,8 +278,8 @@ var exprt = {
         }
     },
     //middleware to parse ?offset to be passed to sequelize
-    query_offset: ()=> {
-        return (req, res, next)=> {
+    query_offset: () => {
+        return (req, res, next) => {
             req.parsed_query = req.parsed_query || {};
             req.parsed_query.offset = 0;
             if (req.query.offset !== undefined) {
@@ -291,34 +292,35 @@ var exprt = {
         }
     },
     //middleware that combines query_offset and query_limit
-    query: ()=> {
-        return (req, res, next)=> {
+    query: () => {
+        return (req, res, next) => {
             exprt.query_limit()(req, res, function () {
                 exprt.query_offset()(req, res, next);
             });
         }
     },
-    ratelimit: ()=> {
-        return (req, res, next)=> {
-            limiter[req.auth_token ? `token` : `ip`](req.auth_token ? req.auth_token : req.ip, (err, wait)=> {
+    ratelimit: () => {
+        return (req, res, next) => {
+            limiter[req.auth_token ? `token` : `ip`](req.auth_token ? req.auth_token : req.ip, (err, wait, left) => {
                 if (err)return next({code: 5200});
                 if (wait)return next({code: 429, wait});
+                req.requestsLeft = left;
                 return next()
             });
         }
     },
-    resolvePermissionGuild: (options)=> {
+    resolvePermissionGuild: (options) => {
         options.param = options.param || 'guild';
         options.requireAll = options.requireAll || false;
         options.perm = options.perm || null;
-        return (req, res, next)=> {
+        return (req, res, next) => {
             if (options.perm === null)return next({code: 5900});
             if (req.params[options.param] === undefined)return next({code: 5900});
-            exprt.auth()(req, res, (err)=> {
+            exprt.auth()(req, res, (err) => {
                 if (err) return next(err);
-                if (req.token.type === 'system')next();
+                if (req.token.type === 'system') next();
                 else if (req.token.type === 'user') { //noinspection JSUnresolvedFunction
-                    req.token.getUser().then(user=> {
+                    req.token.getUser().then(user => {
                         if (user.custom_role > 5) {
                             next();
                         } else { //noinspection JSUnresolvedFunction
@@ -329,7 +331,7 @@ var exprt = {
                                 }]
                             })
                         }
-                    }).spread(role=> {
+                    }).spread(role => {
                         if (role !== undefined && role !== null) {
                             if (Array.isArray(options.perm)) {
                                 if (options.requireAll) {
@@ -345,7 +347,7 @@ var exprt = {
                                     }
                                     next({code: 403});
                                 }
-                            } else if (rolePerms[role.level][options.perm])next();
+                            } else if (rolePerms[role.level][options.perm]) next();
                             else next({code: 403});
                         } else next({code: 403});
                     });
@@ -353,15 +355,15 @@ var exprt = {
             });
         }
     },
-    buildStructure: ()=> {
-        return (req, res, next)=> {
+    buildStructure: () => {
+        return (req, res, next) => {
             req.warnings = [];
             next();
         }
     },
-    hostnameDeprecation: ()=> {
-        return (req, res, next)=> {
-            if (req.hostname === 'foxbot.fuechschen.org')req.warnings.push({
+    hostnameDeprecation: () => {
+        return (req, res, next) => {
+            if (req.hostname === 'foxbot.fuechschen.org') req.warnings.push({
                 type: 'error',
                 msg: 'This API-Url is deprecated and is only supported for legacy clients. Use https://kitsune.fuechschen.org/api/v1 for all new clients.',
                 error: 'deprecated_url'
@@ -369,9 +371,9 @@ var exprt = {
             next();
         }
     },
-    authMissingWarning: ()=> {
-        return (req, res, next)=> {
-            if (!req.auth_token)req.warnings.push({
+    authMissingWarning: () => {
+        return (req, res, next) => {
+            if (!req.auth_token) req.warnings.push({
                 type: 'warning',
                 msg: 'You\'ve send this request without an Authorization token. While this still works, non-authorized request are subject to much stricter ratelimits.',
                 error: 'token_missing'
@@ -379,8 +381,8 @@ var exprt = {
             next();
         }
     },
-    deprecate: (endpoint)=> {
-        return (req, res, next)=> {
+    deprecate: (endpoint) => {
+        return (req, res, next) => {
             req.warnings.push({
                 type: 'warning',
                 msg: `You are using a deprecated endpoint. Please use https://kitsune.fuechschen.org/api${endpoint} from now.`,
@@ -390,10 +392,10 @@ var exprt = {
             next();
         }
     },
-    resolveToken: ()=> {
-        return (req, res, next)=> {
-            if (req.get('Authorization'))req.auth_token = req.get('Authorization');
-            else if (req.query.auth_token && typeof req.query.auth_token === 'string')req.auth_token = req.query.auth_token;
+    resolveToken: () => {
+        return (req, res, next) => {
+            if (req.get('Authorization')) req.auth_token = req.get('Authorization');
+            else if (req.query.auth_token && typeof req.query.auth_token === 'string') req.auth_token = req.query.auth_token;
             else req.auth_token = null;
             next();
         }
